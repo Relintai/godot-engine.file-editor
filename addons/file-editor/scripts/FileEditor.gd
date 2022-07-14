@@ -216,6 +216,12 @@ func _init():
 	file_list.dialog_hide_on_ok = true
 	file_list.window_title = "Save file"
 	file_list.popup_exclusive = true
+	file_list.set_anchors_and_margins_preset(Control.PRESET_WIDE)
+	file_list.margin_left = 222
+	file_list.margin_top = 132
+	file_list.margin_right = -221
+	file_list.margin_bottom = -131
+	file_list.rect_min_size = Vector2(200, 70)
 	
 	new_file_dialogue = AcceptDialog.new()
 	add_child(new_file_dialogue)
