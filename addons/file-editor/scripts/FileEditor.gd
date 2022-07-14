@@ -240,6 +240,12 @@ func _init():
 	select_font_dialog.show_hidden_files = true
 	select_font_dialog.window_title = "Open a File"
 	select_font_dialog.resizable = true
+	select_font_dialog.set_anchors_and_margins_preset(Control.PRESET_WIDE)
+	select_font_dialog.margin_left = 222
+	select_font_dialog.margin_top = 132
+	select_font_dialog.margin_right = -221
+	select_font_dialog.margin_bottom = -131
+	select_font_dialog.rect_min_size = Vector2(200, 70)
 	
 	var farr : PoolStringArray = PoolStringArray()
 	farr.push_back("*.TTF")
