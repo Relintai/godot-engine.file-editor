@@ -5,7 +5,7 @@ var LastOpenedFiles = preload("res://addons/file-editor/scripts/LastOpenedFiles.
 
 var text_editor : TextEdit = null
 
-var FileList
+var file_list : FileDialog = null
 var ClosingFile
 
 var search_box : HBoxContainer = null
@@ -171,9 +171,9 @@ func _init():
 	file_info_read_only.size_flags_horizontal = SIZE_EXPAND | SIZE_SHRINK_END
 
 func _ready():
-	text_editor.connect("text_changed", self, "_on_TextEditor_text_changed")
+	text_editor.connect("text_changed", self, "_on_text_editor_text_changed")
 	
-	FileList = get_parent().get_parent().get_parent().get_parent().get_node("FileList")
+	#FileList = get_parent().get_parent().get_parent().get_parent().get_node("FileList")
 	
 	file_info_read_only.connect("toggled",self,"_on_Readonly_toggled")
 	
@@ -258,7 +258,7 @@ func clean_editor():
 	text_editor.set_text("")
 	#file_info_last_modified_icon.texture = IconLoader.load_icon_from_name("save")
 	file_info_last_modified.set_text("")
-	FileList.invalidate()
+	file_list.invalidate()
 	current_filename = ""
 	current_path = ""
 
@@ -268,7 +268,7 @@ func new_file_open(file_content : String, last_modified : Dictionary, current_fi
 	color_region(current_filename.get_extension())
 	text_editor.set_text(file_content)
 	update_lastmodified(last_modified,"save")
-	FileList.invalidate()
+	file_list.invalidate()
 	count_characters()
 
 func update_lastmodified(last_modified : Dictionary, icon : String):
@@ -278,7 +278,7 @@ func update_lastmodified(last_modified : Dictionary, icon : String):
 func new_file_create(file_name):
 	text_editor.set_text("")
 	
-	FileList.invalidate()
+	file_list.invalidate()
 
 func _on_Readonly_toggled(button_pressed):
 	if button_pressed:

@@ -466,6 +466,7 @@ func generate_file_item(path : String , veditor : Control):
 
 func open_in_vanillaeditor(path : String) -> Control:
 	var editor = VanillaEditor.new()
+	editor.file_list = file_list
 	split_editor_container.add_child(editor,true)
 	
 	if current_editor and current_editor!=editor:
