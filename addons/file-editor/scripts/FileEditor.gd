@@ -388,9 +388,9 @@ func _on_file_btn_pressed(index : int):
 				FileMenuOptions.FILE_MENU_OPTION_DELETE:
 						delete_selected_file()
 				FileMenuOptions.FILE_MENU_OPTION_SEARCH:
-						current_editor.open_searchbox()
+						current_editor.open_search_box()
 				FileMenuOptions.FILE_MENU_OPTION_REPLACE:
-						current_editor.open_replacebox()
+						current_editor.open_replace_box()
 
 func _on_preview_btn_pressed(id : int):
 		if id == 0:
