@@ -51,6 +51,7 @@ func _init():
 	#text_editor.caret_blink = true
 	#text_editor.caret_blink_speed = 1
 	text_editor.caret_moving_by_right_click = false
+	text_editor.minimap_draw = true
 	text_editor.size_flags_vertical = SIZE_EXPAND_FILL
 	text_editor.set("custom_colors/member_variable_color", Color(0.737255, 0.882353, 1))
 	text_editor.set("custom_colors/code_folding_color", Color(1, 1, 1, 0.701961))

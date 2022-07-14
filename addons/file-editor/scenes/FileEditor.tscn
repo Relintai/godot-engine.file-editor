@@ -209,7 +209,7 @@ text = "Editing file:"
 
 [node name="OpenFileName" type="LineEdit" parent="FileEditorContainer/SplitContainer/EditorContainer/HBoxContainer"]
 margin_left = 75.0
-margin_right = 653.0
+margin_right = 650.0
 margin_bottom = 24.0
 mouse_filter = 1
 size_flags_horizontal = 3
@@ -217,20 +217,20 @@ text = "res://VERSION.md"
 editable = false
 
 [node name="wrap_button" type="OptionButton" parent="FileEditorContainer/SplitContainer/EditorContainer/HBoxContainer"]
-margin_left = 657.0
-margin_right = 741.0
+margin_left = 654.0
+margin_right = 738.0
 margin_bottom = 24.0
 text = "No Wrap"
 items = [ "No Wrap", null, false, 0, null, "Soft Wrap", null, false, 1, null ]
 selected = 0
 
 [node name="map_button" type="OptionButton" parent="FileEditorContainer/SplitContainer/EditorContainer/HBoxContainer"]
-margin_left = 745.0
+margin_left = 742.0
 margin_right = 835.0
 margin_bottom = 24.0
-text = "Hide Map"
+text = "Show Map"
 items = [ "Hide Map", null, false, 0, null, "Show Map", null, false, 1, null ]
-selected = 0
+selected = 1
 
 [node name="FileList" type="FileDialog" parent="."]
 margin_top = 24.0
