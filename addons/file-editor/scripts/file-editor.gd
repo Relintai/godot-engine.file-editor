@@ -7,7 +7,7 @@ var FileEditor
 
 func _enter_tree():
 	add_autoload_singleton("LastOpenedFiles","res://addons/file-editor/scripts/LastOpenedFiles.gd")
-	FileEditor = preload("../scenes/FileEditor.tscn").instance()
+	FileEditor = preload("res://addons/file-editor/scripts/FileEditor.gd").new()
 	get_editor_interface().get_editor_viewport().add_child(FileEditor)
 	FileEditor.hide()
 

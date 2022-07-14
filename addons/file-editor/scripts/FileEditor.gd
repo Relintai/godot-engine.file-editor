@@ -1,33 +1,36 @@
 tool
 extends Control
 
-onready var FileList = $FileList
+var file_btn : MenuButton = null
+var preview_btn : MenuButton = null
+var settings_btn : MenuButton = null
 
-onready var NewFileDialogue = $NewFileDialogue
-onready var NewFileDialogue_name = $NewFileDialogue/VBoxContainer/new_filename
+var file_btn_popup : PopupMenu = null
+var preview_btn_popup : PopupMenu = null
+var settings_btn_popup : PopupMenu = null
 
-onready var FileBTN = $FileEditorContainer/TobBar/file_btn.get_popup()
-onready var PreviewBTN = $FileEditorContainer/TobBar/preview_btn.get_popup()
-onready var SettingsBTN : PopupMenu = $FileEditorContainer/TobBar/SettingsBtn.get_popup()
+var editor_container : HSplitContainer = null
+var file_container : VBoxContainer = null
+var open_file_list : ItemList = null
+var split_editor_container : VBoxContainer = null
+var open_file_name : LineEdit = null
+var wrap_btn : OptionButton = null
+var map_btn : OptionButton = null
 
-onready var SelectFontDialog : FileDialog = $SelectFontDialog
+var file_list : FileDialog = null
 
-onready var FileContainer = $FileEditorContainer/SplitContainer/FileContainer
-onready var OpenFileList = $FileEditorContainer/SplitContainer/FileContainer/OpenFileList
-onready var OpenFileName = $FileEditorContainer/SplitContainer/EditorContainer/HBoxContainer/OpenFileName
-onready var SplitEditorContainer = $FileEditorContainer/SplitContainer/EditorContainer
-onready var WrapBTN = $FileEditorContainer/SplitContainer/EditorContainer/HBoxContainer/wrap_button
-onready var MapBTN = $FileEditorContainer/SplitContainer/EditorContainer/HBoxContainer/map_button
+var new_file_dialogue : AcceptDialog = null
+var new_file_dialogue_name : LineEdit = null
 
-onready var ConfirmationClose = $ConfirmationDialog
+var confirmation_close : ConfirmationDialog = null
+
+var select_font_dialog : FileDialog = null
 
 var IconLoader = preload("res://addons/file-editor/scripts/IconLoader.gd").new()
 var LastOpenedFiles = preload("res://addons/file-editor/scripts/LastOpenedFiles.gd").new()
 
 var Preview = preload("res://addons/file-editor/scripts/Preview.gd")
 var VanillaEditor = preload("res://addons/file-editor/scripts/VanillaEditor.gd")
-
-onready var EditorContainer = $FileEditorContainer/SplitContainer
 
 var DIRECTORY : String = "res://"
 var EXCEPTIONS : String = "addons"
@@ -63,153 +66,282 @@ var current_font : DynamicFont
 
 var editing_file : bool = false
 
+func _init():
+	set_anchors_and_margins_preset(Control.PRESET_WIDE)
+	size_flags_vertical = SIZE_EXPAND_FILL
+	size_flags_horizontal = SIZE_EXPAND_FILL
+	
+	var vbc : VBoxContainer = VBoxContainer.new()
+	add_child(vbc)
+	vbc.set_anchors_and_margins_preset(Control.PRESET_WIDE)
+	
+	var tob_bar : HBoxContainer = HBoxContainer.new()
+	vbc.add_child(tob_bar)
+	
+	file_btn = MenuButton.new()
+	tob_bar.add_child(file_btn)
+	file_btn.text = "File"
+	
+	file_btn_popup = file_btn.get_popup()
+	
+	var hotkey : InputEventKey = InputEventKey.new()
+	hotkey.scancode = KEY_N
+	hotkey.control = true
+	file_btn_popup.add_item("New File", -1, hotkey.get_scancode_with_modifiers())
+	
+	hotkey = InputEventKey.new()
+	hotkey.scancode = KEY_O
+	hotkey.control = true
+	file_btn_popup.add_item("Open File", -1, hotkey.get_scancode_with_modifiers())
+	
+	hotkey = InputEventKey.new()
+	hotkey.scancode = KEY_C
+	hotkey.control = true
+	hotkey.alt = true
+	file_btn_popup.add_item("Close File", -1, hotkey.get_scancode_with_modifiers())
+	
+	file_btn_popup.add_separator()
+	
+	hotkey = InputEventKey.new()
+	hotkey.scancode = KEY_S
+	hotkey.control = true
+	file_btn_popup.add_item("Save File", -1, hotkey.get_scancode_with_modifiers())
+	
+	hotkey = InputEventKey.new()
+	hotkey.scancode = KEY_S
+	hotkey.control = true
+	hotkey.alt = true
+	file_btn_popup.add_item("Save File as...", -1, hotkey.get_scancode_with_modifiers())
+	
+	hotkey = InputEventKey.new()
+	hotkey.scancode = KEY_D
+	hotkey.control = true
+	file_btn_popup.add_item("Delete File", -1, hotkey.get_scancode_with_modifiers())
+	
+	file_btn_popup.add_separator()
+	
+	hotkey = InputEventKey.new()
+	hotkey.scancode = KEY_F
+	hotkey.control = true
+	file_btn_popup.add_item("Search in file...", -1, hotkey.get_scancode_with_modifiers())
+	
+	hotkey = InputEventKey.new()
+	hotkey.scancode = KEY_R
+	hotkey.control = true
+	file_btn_popup.add_item("Replace occurencies", -1, hotkey.get_scancode_with_modifiers())
+	
+	#Preview
+	preview_btn = MenuButton.new()
+	tob_bar.add_child(preview_btn)
+	preview_btn.text = "Preview"
+	
+	preview_btn_popup = preview_btn.get_popup()
+	
+	preview_btn_popup.add_item("BBCode Preview")
+	preview_btn_popup.add_item("Markdown Preview")
+	preview_btn_popup.add_item("HTML Preview")
+	preview_btn_popup.add_item("CSV Preview")
+	
+	#Settings
+	settings_btn = MenuButton.new()
+	tob_bar.add_child(settings_btn)
+	settings_btn.text = "Settings"
+	
+	settings_btn_popup = settings_btn.get_popup()
+	
+	settings_btn_popup.add_item("Change Font")
+	
+	#SplitContainer
+	editor_container = HSplitContainer.new()
+	vbc.add_child(editor_container)
+	editor_container.split_offset = 150
+	editor_container.size_flags_horizontal = SIZE_EXPAND_FILL
+	editor_container.size_flags_vertical = SIZE_EXPAND_FILL
+	
+	#Files
+	file_container = VBoxContainer.new()
+	editor_container.add_child(file_container)
+	
+	open_file_list = ItemList.new()
+	file_container.add_child(open_file_list)
+	open_file_list.allow_reselect = true
+	open_file_list.size_flags_vertical = SIZE_EXPAND_FILL
+	
+	file_container.add_child(HSeparator.new())
+	
+	#Editor
+	split_editor_container = VBoxContainer.new()
+	editor_container.add_child(split_editor_container)
+	
+	var editor_top_bar : HBoxContainer = HBoxContainer.new()
+	split_editor_container.add_child(editor_top_bar)
+	
+	var edtopbar_label : Label = Label.new()
+	editor_top_bar.add_child(edtopbar_label)
+	edtopbar_label.text = "Editing file:"
+	
+	open_file_name = LineEdit.new()
+	editor_top_bar.add_child(open_file_name)
+	open_file_name.editable = false
+	open_file_name.mouse_filter = Control.MOUSE_FILTER_PASS
+	open_file_name.size_flags_horizontal = SIZE_EXPAND_FILL
+	
+	wrap_btn = OptionButton.new()
+	editor_top_bar.add_child(wrap_btn)
+	wrap_btn.add_item("No Wrap")
+	wrap_btn.add_item("Soft Wrap")
+	
+	map_btn = OptionButton.new()
+	editor_top_bar.add_child(map_btn)
+	map_btn.add_item("Hide Map")
+	map_btn.add_item("Show Map")
+	map_btn.selected = 1
+	
+	#dialogs
+	file_list = FileDialog.new()
+	add_child(file_list)
+	file_list.show_hidden_files = true
+	file_list.dialog_hide_on_ok = true
+	file_list.window_title = "Save file"
+	file_list.popup_exclusive = true
+	
+	new_file_dialogue = AcceptDialog.new()
+	add_child(new_file_dialogue)
+	new_file_dialogue.window_title = "Create new File"
+	
+	var nfd_vbc : VBoxContainer = VBoxContainer.new()
+	new_file_dialogue.add_child(nfd_vbc)
+	
+	var nfd_name : Label = Label.new()
+	nfd_vbc.add_child(nfd_name)
+	nfd_name.text = "Insert file name (no extension needed)"
+	nfd_name.align = Label.ALIGN_CENTER
+	nfd_name.valign = Label.VALIGN_CENTER
+	nfd_name.size_flags_vertical = SIZE_EXPAND_FILL
+	
+	new_file_dialogue_name = LineEdit.new()
+	nfd_vbc.add_child(new_file_dialogue_name)
+	new_file_dialogue_name.clear_button_enabled = true
+	new_file_dialogue_name.text = "example"
+	new_file_dialogue_name.rect_min_size = Vector2(200, 0)
+	new_file_dialogue_name.size_flags_horizontal = SIZE_EXPAND | SIZE_SHRINK_CENTER
+	new_file_dialogue_name.size_flags_vertical = SIZE_EXPAND_FILL
+	
+	confirmation_close = ConfirmationDialog.new()
+	add_child(confirmation_close)
+	confirmation_close.dialog_text = "There are some unsaved changes.\nPress \"OK\" if you want to close this tab anyway, or \"cancel\" if you want to keep on editing your file."
+	confirmation_close.window_title = "Unsaved changes"
+	confirmation_close.set_anchors_and_margins_preset(Control.PRESET_CENTER)
+	
+	select_font_dialog = FileDialog.new()
+	add_child(select_font_dialog)
+	select_font_dialog.mode = FileDialog.MODE_OPEN_FILE
+	select_font_dialog.access = FileDialog.ACCESS_FILESYSTEM
+	select_font_dialog.show_hidden_files = true
+	select_font_dialog.window_title = "Open a File"
+	select_font_dialog.resizable = true
+	
+	var farr : PoolStringArray = PoolStringArray()
+	farr.push_back("*.TTF")
+	farr.push_back("*.ttf")
+	select_font_dialog.filters = farr
+
+
 func _ready():
 	if not Engine.is_editor_hint():
 		return
 		
 	clean_editor()
 	connect_signals()
-	create_shortcuts()
-	load_icons()
 	
 	var opened_files : Array = LastOpenedFiles.load_opened_files()
 	for opened_file in opened_files:
 		open_file(opened_file[1], opened_file[2])
 		
-	FileList.set_filters(EXTENSIONS)
+	file_list.set_filters(EXTENSIONS)
 
-func create_shortcuts():
-	var hotkey
-
-	hotkey = InputEventKey.new()
-	hotkey.scancode = KEY_S
-	hotkey.control = true
-	FileBTN.set_item_accelerator(4,hotkey.get_scancode_with_modifiers()) # save file
-
-	hotkey = InputEventKey.new()
-	hotkey.scancode = KEY_N
-	hotkey.control = true
-	FileBTN.set_item_accelerator(0,hotkey.get_scancode_with_modifiers()) # new file
-
-	hotkey = InputEventKey.new()
-	hotkey.scancode = KEY_O
-	hotkey.control = true
-	FileBTN.set_item_accelerator(1,hotkey.get_scancode_with_modifiers()) # open file
-
-	hotkey = InputEventKey.new()
-	hotkey.scancode = KEY_D
-	hotkey.control = true
-	FileBTN.set_item_accelerator(6,hotkey.get_scancode_with_modifiers()) # delete file
-
-	hotkey = InputEventKey.new()
-	hotkey.scancode = KEY_S
-	hotkey.control = true
-	hotkey.alt = true
-	FileBTN.set_item_accelerator(5,hotkey.get_scancode_with_modifiers()) #save file as
-
-	hotkey = InputEventKey.new()
-	hotkey.scancode = KEY_C
-	hotkey.control = true
-	hotkey.alt = true
-	FileBTN.set_item_accelerator(2,hotkey.get_scancode_with_modifiers()) # close file
-
-	hotkey = InputEventKey.new()
-	hotkey.scancode = KEY_F
-	hotkey.control = true
-	FileBTN.set_item_accelerator(8,hotkey.get_scancode_with_modifiers()) # search
-
-	hotkey = InputEventKey.new()
-	hotkey.scancode = KEY_R
-	hotkey.control = true
-	FileBTN.set_item_accelerator(9,hotkey.get_scancode_with_modifiers()) # replace
-
-
-func load_icons():
-	$FileEditorContainer/TobBar/file_btn.icon = IconLoader.load_icon_from_name("file")
-	$FileEditorContainer/TobBar/preview_btn.icon = IconLoader.load_icon_from_name("read")
-	$FileEditorContainer/TobBar/SettingsBtn.icon = IconLoader.load_icon_from_name("settings")
 
 func connect_signals():
-	FileList.connect("confirmed",self,"update_list")
-	FileBTN.connect("id_pressed",self,"_on_filebtn_pressed")
-	PreviewBTN.connect("id_pressed",self,"_on_previewbtn_pressed")
-	SettingsBTN.connect("id_pressed",self,"_on_settingsbtn_pressed")
+	file_list.connect("confirmed",self,"update_list")
+	file_btn_popup.connect("id_pressed",self,"_on_file_btn_pressed")
+	preview_btn_popup.connect("id_pressed",self,"_on_preview_btn_pressed")
+	settings_btn_popup.connect("id_pressed",self,"_on_settings_btn_pressed")
 	
-	OpenFileList.connect("item_selected",self,"_on_fileitem_pressed")
-	WrapBTN.connect("item_selected",self,"on_wrap_button")
-	MapBTN.connect("item_selected",self,"on_minimap_button")
+	open_file_list.connect("item_selected",self,"_on_fileitem_pressed")
+	wrap_btn.connect("item_selected",self,"on_wrap_button")
+	map_btn.connect("item_selected",self,"on_minimap_button")
 	
-	SelectFontDialog.connect("file_selected",self,"_on_font_selected")
+	select_font_dialog.connect("file_selected",self,"_on_font_selected")
 
 
 func create_selected_file():
 		update_list()
 		
-		FileList.mode = FileDialog.MODE_SAVE_FILE
-		FileList.set_title("Create a new File")
+		file_list.mode = FileDialog.MODE_SAVE_FILE
+		file_list.set_title("Create a new File")
 		
-		if FileList.is_connected("file_selected",self,"delete_file"):
-				FileList.disconnect("file_selected",self,"delete_file")
+		if file_list.is_connected("file_selected",self,"delete_file"):
+				file_list.disconnect("file_selected",self,"delete_file")
 				
-		if FileList.is_connected("file_selected",self,"open_file"):
-				FileList.disconnect("file_selected",self,"open_file")
+		if file_list.is_connected("file_selected",self,"open_file"):
+				file_list.disconnect("file_selected",self,"open_file")
 				
-		if not FileList.is_connected("file_selected",self,"create_new_file"):
-				FileList.connect("file_selected",self,"create_new_file")
+		if not file_list.is_connected("file_selected",self,"create_new_file"):
+				file_list.connect("file_selected",self,"create_new_file")
 				
-		open_filelist()
+		open_file_list()
 
 func open_selected_file():
 		update_list()
 		
-		FileList.mode = FileDialog.MODE_OPEN_FILE
-		FileList.set_title("Select a File you want to edit")
+		file_list.mode = FileDialog.MODE_OPEN_FILE
+		file_list.set_title("Select a File you want to edit")
 		
-		if FileList.is_connected("file_selected",self,"delete_file"):
-				FileList.disconnect("file_selected",self,"delete_file")
+		if file_list.is_connected("file_selected",self,"delete_file"):
+				file_list.disconnect("file_selected",self,"delete_file")
 				
-		if FileList.is_connected("file_selected",self,"create_new_file"):
-				FileList.disconnect("file_selected",self,"create_new_file")
+		if file_list.is_connected("file_selected",self,"create_new_file"):
+				file_list.disconnect("file_selected",self,"create_new_file")
 				
-		if not FileList.is_connected("file_selected",self,"open_file"):
-				FileList.connect("file_selected",self,"open_file")
+		if not file_list.is_connected("file_selected",self,"open_file"):
+				file_list.connect("file_selected",self,"open_file")
 				
-		open_filelist()
+		open_file_list()
 
 func delete_selected_file():
 		update_list()
 		
-		FileList.mode = FileDialog.MODE_OPEN_FILES
-		FileList.set_title("Select one or more Files you want to delete")
+		file_list.mode = FileDialog.MODE_OPEN_FILES
+		file_list.set_title("Select one or more Files you want to delete")
 		
-		if FileList.is_connected("file_selected",self,"open_file"):
-				FileList.disconnect("file_selected",self,"open_file")
+		if file_list.is_connected("file_selected",self,"open_file"):
+				file_list.disconnect("file_selected",self,"open_file")
 				
-		if FileList.is_connected("file_selected",self,"create_new_file"):
-				FileList.disconnect("file_selected",self,"create_new_file")
+		if file_list.is_connected("file_selected",self,"create_new_file"):
+				file_list.disconnect("file_selected",self,"create_new_file")
 				
-		if not FileList.is_connected("files_selected",self,"delete_file"):
-				FileList.connect("files_selected",self,"delete_file")
+		if not file_list.is_connected("files_selected",self,"delete_file"):
+				file_list.connect("files_selected",self,"delete_file")
 				
-		open_filelist()
+		open_file_list()
 
 func save_current_file_as():
 		update_list()
-		FileList.mode = FileDialog.MODE_SAVE_FILE
-		FileList.set_title("Save this File as...")
+		file_list.mode = FileDialog.MODE_SAVE_FILE
+		file_list.set_title("Save this File as...")
 		
-		if FileList.is_connected("file_selected",self,"delete_file"):
-				FileList.disconnect("file_selected",self,"delete_file")
+		if file_list.is_connected("file_selected",self,"delete_file"):
+				file_list.disconnect("file_selected",self,"delete_file")
 				
-		if FileList.is_connected("file_selected",self,"open_file"):
-				FileList.disconnect("file_selected",self,"open_file")
+		if file_list.is_connected("file_selected",self,"open_file"):
+				file_list.disconnect("file_selected",self,"open_file")
 				
-		if not FileList.is_connected("file_selected",self,"create_new_file"):
-				FileList.connect("file_selected",self,"create_new_file")
+		if not file_list.is_connected("file_selected",self,"create_new_file"):
+				file_list.connect("file_selected",self,"create_new_file")
 				
-		open_filelist()
+		open_file_list()
 
-func _on_filebtn_pressed(index : int):
+func _on_file_btn_pressed(index : int):
 		match index:
 				0:
 						create_selected_file()
@@ -236,7 +368,7 @@ func _on_filebtn_pressed(index : int):
 				7:
 						current_editor.open_replacebox()
 
-func _on_previewbtn_pressed(id : int):
+func _on_preview_btn_pressed(id : int):
 		if id == 0:
 				bbcode_preview()
 		elif id == 1:
@@ -246,10 +378,10 @@ func _on_previewbtn_pressed(id : int):
 		elif id == 3:
 				csv_preview()
 
-func _on_settingsbtn_pressed(index : int):
+func _on_settings_btn_pressed(index : int):
 	match index:
 		0:
-			SelectFontDialog.popup()
+			select_font_dialog.popup()
 
 func _on_font_selected(font_path : String):
 	current_editor.set_font(font_path)
@@ -257,10 +389,10 @@ func _on_font_selected(font_path : String):
 
 func _on_fileitem_pressed(index : int):
 	current_file_index = index
-	var selected_item_metadata = OpenFileList.get_item_metadata(current_file_index)
+	var selected_item_metadata = open_file_list.get_item_metadata(current_file_index)
 	var extension = selected_item_metadata[0].current_path.get_file().get_extension()
 	
-	if OpenFileList.get_item_text(current_file_index).begins_with("(*)"):
+	if open_file_list.get_item_text(current_file_index).begins_with("(*)"):
 		editing_file = true
 	else:
 		editing_file = false
@@ -273,14 +405,14 @@ func _on_fileitem_pressed(index : int):
 		
 		current_editor = selected_item_metadata[0]
 		current_editor.show()
-		OpenFileName.set_text(current_editor.current_path)
+		open_file_name.set_text(current_editor.current_path)
 
-		if WrapBTN.get_selected_id() == 1:
+		if wrap_btn.get_selected_id() == 1:
 			current_editor.set_wrap_enabled(true)
 		else:
 			current_editor.set_wrap_enabled(false)
 			
-		if MapBTN.get_selected_id() == 1:
+		if map_btn.get_selected_id() == 1:
 			current_editor.draw_minimap(true)
 		else:
 			current_editor.draw_minimap(false)
@@ -296,22 +428,22 @@ func open_file(path : String, font : String = "null"):
 
 		generate_file_item(path, vanilla_editor)
 		
-		LastOpenedFiles.store_opened_files(OpenFileList)
+		LastOpenedFiles.store_opened_files(open_file_list)
 		
 	current_editor.show()
 
 func generate_file_item(path : String , veditor : Control):
-	OpenFileName.set_text(path)
-	OpenFileList.add_item(path.get_file(),IconLoader.load_icon_from_name("file"),true)
+	open_file_name.set_text(path)
+	open_file_list.add_item(path.get_file(),IconLoader.load_icon_from_name("file"),true)
 	
-	current_file_index = OpenFileList.get_item_count()-1
+	current_file_index = open_file_list.get_item_count()-1
 	
-	OpenFileList.set_item_metadata(current_file_index,[veditor])
-	OpenFileList.select(OpenFileList.get_item_count()-1)
+	open_file_list.set_item_metadata(current_file_index,[veditor])
+	open_file_list.select(open_file_list.get_item_count()-1)
 
 func open_in_vanillaeditor(path : String) -> Control:
 	var editor = VanillaEditor.new()
-	SplitEditorContainer.add_child(editor,true)
+	split_editor_container.add_child(editor,true)
 	
 	if current_editor and current_editor!=editor:
 		editor.show()
@@ -332,25 +464,25 @@ func open_in_vanillaeditor(path : String) -> Control:
 	editor.new_file_open(current_content,last_modified,current_file_path)
 	update_list()
 	
-	if WrapBTN.get_selected_id() == 1:
+	if wrap_btn.get_selected_id() == 1:
 		current_editor.set_wrap_enabled(true)
 	
 	return editor
 
 func close_file(index):
 	if editing_file:
-		ConfirmationClose.popup()
+		confirmation_close.popup()
 	else:
 		confirm_close(index)
 
 func confirm_close(index):
-	LastOpenedFiles.remove_opened_file(index,OpenFileList)
-	OpenFileList.remove_item(index)
-	OpenFileName.clear()
+	LastOpenedFiles.remove_opened_file(index,open_file_list)
+	open_file_list.remove_item(index)
+	open_file_name.clear()
 	current_editor.queue_free()
 	
 	if index > 0:
-		OpenFileList.select(index-1)
+		open_file_list.select(index-1)
 		_on_fileitem_pressed(index-1)
 
 func _on_update_file():
@@ -371,14 +503,14 @@ func delete_file(files_selected : PoolStringArray):
 	
 	update_list()
 
-func open_newfiledialogue():
-	NewFileDialogue.popup()
-	NewFileDialogue.set_position(OS.get_screen_size()/2 - NewFileDialogue.get_size()/2)
+func open_new_file_dialogue():
+	new_file_dialogue.popup()
+	new_file_dialogue.set_position(OS.get_screen_size()/2 - new_file_dialogue.get_size()/2)
 
-func open_filelist():
+func open_file_list():
 	update_list()
-	FileList.popup()
-	FileList.set_position(OS.get_screen_size()/2 - FileList.get_size()/2)
+	file_list.popup()
+	file_list.set_position(OS.get_screen_size()/2 - file_list.get_size()/2)
 
 func create_new_file(given_path : String):
 	var current_file = File.new()
@@ -412,10 +544,10 @@ func save_file(current_path : String):
 	current_editor.update_lastmodified(last_modified,"save")
 	
 		
-	OpenFileList.set_item_metadata(current_file_index,[current_editor])
+	open_file_list.set_item_metadata(current_file_index,[current_editor])
 	
-	if OpenFileList.get_item_text(current_file_index).begins_with("(*)"):
-		OpenFileList.set_item_text(current_file_index,OpenFileList.get_item_text(current_file_index).lstrip("(*)"))
+	if open_file_list.get_item_text(current_file_index).begins_with("(*)"):
+		open_file_list.set_item_text(current_file_index,open_file_list.get_item_text(current_file_index).lstrip("(*)"))
 		editing_file = false
 	
 	update_list()
@@ -424,8 +556,8 @@ func clean_editor() -> void :
 	for vanillaeditor in get_tree().get_nodes_in_group("vanilla_editor"):
 		vanillaeditor.queue_free()
 		
-	OpenFileName.clear()
-	OpenFileList.clear()
+	open_file_name.clear()
+	open_file_list.clear()
 
 
 func csv_preview():
@@ -464,12 +596,12 @@ func html_preview():
 
 
 func _on_vanillaeditor_text_changed():
-	if not OpenFileList.get_item_text(current_file_index).begins_with("(*)"):
-		OpenFileList.set_item_text(current_file_index,"(*)"+OpenFileList.get_item_text(current_file_index))
+	if not open_file_list.get_item_text(current_file_index).begins_with("(*)"):
+		open_file_list.set_item_text(current_file_index,"(*)"+open_file_list.get_item_text(current_file_index))
 		editing_file = true
 
 func update_list():
-		FileList.invalidate()
+		file_list.invalidate()
 
 func on_wrap_button(index:int):
 	match index:
