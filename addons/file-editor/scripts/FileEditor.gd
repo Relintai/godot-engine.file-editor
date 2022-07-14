@@ -8,7 +8,6 @@ onready var NewFileDialogue_name = $NewFileDialogue/VBoxContainer/new_filename
 
 onready var FileBTN = $FileEditorContainer/TobBar/file_btn.get_popup()
 onready var PreviewBTN = $FileEditorContainer/TobBar/preview_btn.get_popup()
-onready var EditorBTN = $FileEditorContainer/TobBar/editor_btn.get_popup()
 onready var SettingsBTN : PopupMenu = $FileEditorContainer/TobBar/SettingsBtn.get_popup()
 
 onready var Version = $FileEditorContainer/TobBar/version
@@ -29,7 +28,6 @@ var LastOpenedFiles = preload("res://addons/file-editor/scripts/LastOpenedFiles.
 
 var Preview = preload("res://addons/file-editor/scripts/Preview.gd")
 var VanillaEditor = preload("res://addons/file-editor/scripts/VanillaEditor.gd")
-var CsvEditor = preload("res://addons/file-editor/scenes/CSVEditor.tscn")
 
 onready var EditorContainer = $FileEditorContainer/SplitContainer
 
@@ -63,7 +61,6 @@ var current_file_index = -1
 var current_file_path = ""
 var save_as = false
 var current_editor : Control
-var current_csv_editor : CSVEditor
 var current_font : DynamicFont
 
 var editing_file : bool = false
@@ -129,29 +126,16 @@ func create_shortcuts():
 	hotkey.control = true
 	FileBTN.set_item_accelerator(9,hotkey.get_scancode_with_modifiers()) # replace
 
-	# vanilla editor -----------------------
-
-	hotkey = InputEventKey.new()
-	hotkey.scancode = KEY_1
-	hotkey.control = true
-	EditorBTN.set_item_accelerator(0,hotkey.get_scancode_with_modifiers()) # vanilla editor
-
-	hotkey = InputEventKey.new()
-	hotkey.scancode = KEY_2
-	hotkey.control = true
-	EditorBTN.set_item_accelerator(1,hotkey.get_scancode_with_modifiers()) # csv editor
 
 func load_icons():
 	$FileEditorContainer/TobBar/file_btn.icon = IconLoader.load_icon_from_name("file")
 	$FileEditorContainer/TobBar/preview_btn.icon = IconLoader.load_icon_from_name("read")
-	$FileEditorContainer/TobBar/editor_btn.icon = IconLoader.load_icon_from_name("edit_")
 	$FileEditorContainer/TobBar/SettingsBtn.icon = IconLoader.load_icon_from_name("settings")
 
 func connect_signals():
 	FileList.connect("confirmed",self,"update_list")
 	FileBTN.connect("id_pressed",self,"_on_filebtn_pressed")
 	PreviewBTN.connect("id_pressed",self,"_on_previewbtn_pressed")
-	EditorBTN.connect("id_pressed",self,"_on_editorbtn_pressed")
 	SettingsBTN.connect("id_pressed",self,"_on_settingsbtn_pressed")
 	
 	OpenFileList.connect("item_selected",self,"_on_fileitem_pressed")
@@ -250,8 +234,7 @@ func _on_filebtn_pressed(index : int):
 				3:
 						if current_file_index!=-1 and current_file_path != "":
 								save_as = false
-								if current_csv_editor and current_csv_editor.visible:
-										current_csv_editor.save_table()
+
 								save_file(current_file_path)
 				4:
 						if current_file_index!=-1 and current_file_path != "":
@@ -275,19 +258,6 @@ func _on_previewbtn_pressed(id : int):
 		elif id == 3:
 				csv_preview()
 
-func _on_editorbtn_pressed(index : int):
-	match index:
-		0:
-			if not current_editor.visible:
-				current_editor.show()
-				
-				if current_csv_editor:
-					current_csv_editor.hide()
-		1:
-			if current_csv_editor and not current_csv_editor.visible:
-				current_editor.hide()
-				current_csv_editor.show()
-
 func _on_settingsbtn_pressed(index : int):
 	match index:
 		0:
@@ -310,11 +280,12 @@ func _on_fileitem_pressed(index : int):
 	current_file_path = selected_item_metadata[0].current_path
 	
 	if current_editor.visible or current_editor == null:
-		current_editor.hide()
+		if current_editor != null:
+			current_editor.hide()
+		
 		current_editor = selected_item_metadata[0]
 		current_editor.show()
 		OpenFileName.set_text(current_editor.current_path)
-		current_csv_editor = selected_item_metadata[1]
 
 		if WrapBTN.get_selected_id() == 1:
 			current_editor.set_wrap_enabled(true)
@@ -325,49 +296,29 @@ func _on_fileitem_pressed(index : int):
 			current_editor.draw_minimap(true)
 		else:
 			current_editor.draw_minimap(false)
-			
-	elif current_csv_editor and current_csv_editor.visible:
-		
-		if extension == "csv":
-			current_csv_editor.hide()
-			current_csv_editor = selected_item_metadata[1]
-			current_csv_editor.show()
-			OpenFileName.set_text(current_csv_editor.current_file_path)
-			current_editor = selected_item_metadata[0]
-		else:
-			if current_csv_editor:
-				current_csv_editor.hide()
-				
-			current_csv_editor = selected_item_metadata[1]
-
-			current_editor.hide()
-			current_editor = selected_item_metadata[0]
-			current_editor.show()
-			OpenFileName.set_text(current_editor.current_path)
 
 func open_file(path : String, font : String = "null"):
 	if current_file_path != path:
 		current_file_path = path
 		
 		var vanilla_editor = open_in_vanillaeditor(path)
+		
 		if font != "null" and vanilla_editor.get("custom_fonts/font")!=null:
 			vanilla_editor.set_font(font)
-			
-		var csv_editor = open_in_csveditor(path)
-		
-		generate_file_item(path, vanilla_editor, csv_editor)
+
+		generate_file_item(path, vanilla_editor)
 		
 		LastOpenedFiles.store_opened_files(OpenFileList)
 		
 	current_editor.show()
 
-func generate_file_item(path : String , veditor : Control , csveditor : Control):
+func generate_file_item(path : String , veditor : Control):
 	OpenFileName.set_text(path)
 	OpenFileList.add_item(path.get_file(),IconLoader.load_icon_from_name("file"),true)
 	
 	current_file_index = OpenFileList.get_item_count()-1
 	
-	OpenFileList.set_item_metadata(current_file_index,[veditor, csveditor])
+	OpenFileList.set_item_metadata(current_file_index,[veditor])
 	OpenFileList.select(OpenFileList.get_item_count()-1)
 
 func open_in_vanillaeditor(path : String) -> Control:
@@ -378,8 +329,6 @@ func open_in_vanillaeditor(path : String) -> Control:
 		editor.show()
 		current_editor.hide()
 		
-	if current_csv_editor and current_csv_editor.visible:
-		current_csv_editor.hide()
 	
 	current_editor = editor
 	editor.connect("text_changed",self,"_on_vanillaeditor_text_changed")
@@ -399,23 +348,6 @@ func open_in_vanillaeditor(path : String) -> Control:
 		current_editor.set_wrap_enabled(true)
 	
 	return editor
-
-func open_in_csveditor(path : String) -> Control:
-	var extension = path.get_file().get_extension()
-	
-	if extension in ["csv", "txt"]:
-		var csveditor = CsvEditor.instance()
-		SplitEditorContainer.add_child(csveditor)
-		csveditor.hide()
-		csveditor.connect("update_file",self,"_on_update_file")
-		csveditor.connect("editing_file",self,"_on_vanillaeditor_text_changed")
-		current_csv_editor = csveditor
-		csveditor.current_file_path = path
-		csveditor.open_csv_file(path)
-		return csveditor
-	else:
-		current_csv_editor = null
-		return null
 
 func close_file(index):
 	if editing_file:
@@ -491,10 +423,8 @@ func save_file(current_path : String):
 	
 	current_editor.update_lastmodified(last_modified,"save")
 	
-	if current_csv_editor != null and not current_csv_editor.is_visible():
-		current_csv_editor.open_csv_file(current_path)
 		
-	OpenFileList.set_item_metadata(current_file_index,[current_editor,current_csv_editor])
+	OpenFileList.set_item_metadata(current_file_index,[current_editor])
 	
 	if OpenFileList.get_item_text(current_file_index).begins_with("(*)"):
 		OpenFileList.set_item_text(current_file_index,OpenFileList.get_item_text(current_file_index).lstrip("(*)"))

@@ -8,16 +8,6 @@
 
 config_version=4
 
-_global_script_classes=[ {
-"base": "Control",
-"class": @"CSVEditor",
-"language": @"GDScript",
-"path": "res://addons/file-editor/scripts/CSVEditor.gd"
-} ]
-_global_script_class_icons={
-@"CSVEditor": ""
-}
-
 [application]
 
 config/name="fileed"
