@@ -10,8 +10,6 @@ onready var FileBTN = $FileEditorContainer/TobBar/file_btn.get_popup()
 onready var PreviewBTN = $FileEditorContainer/TobBar/preview_btn.get_popup()
 onready var SettingsBTN : PopupMenu = $FileEditorContainer/TobBar/SettingsBtn.get_popup()
 
-onready var Version = $FileEditorContainer/TobBar/version
-
 onready var SelectFontDialog : FileDialog = $SelectFontDialog
 
 onready var FileContainer = $FileEditorContainer/SplitContainer/FileContainer
@@ -70,7 +68,6 @@ func _ready():
 		return
 		
 	clean_editor()
-	update_version()
 	connect_signals()
 	create_shortcuts()
 	load_icons()
@@ -144,15 +141,6 @@ func connect_signals():
 	
 	SelectFontDialog.connect("file_selected",self,"_on_font_selected")
 
-func update_version():
-	var plugin_version = ""
-	var config =  ConfigFile.new()
-	var err = config.load("res://addons/file-editor/plugin.cfg")
-	
-	if err == OK:
-		plugin_version = config.get_value("plugin","version")
-		
-	Version.set_text("v"+plugin_version)
 
 func create_selected_file():
 		update_list()

@@ -165,16 +165,6 @@ text = "Settings"
 icon = SubResource( 34 )
 items = [ "Change Font", null, 0, false, false, 0, 0, null, "", false ]
 
-[node name="version" type="Label" parent="FileEditorContainer/TobBar"]
-margin_left = 961.0
-margin_top = 4.0
-margin_right = 1000.0
-margin_bottom = 18.0
-size_flags_horizontal = 10
-custom_colors/font_color = Color( 0.121569, 0.145098, 0.192157, 1 )
-text = "v1.9.0"
-align = 1
-
 [node name="SplitContainer" type="HSplitContainer" parent="FileEditorContainer"]
 margin_top = 26.0
 margin_right = 1000.0
