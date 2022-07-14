@@ -1,6 +1,42 @@
 tool
 extends Control
 
+enum FileMenuOptions {
+	FILE_MENU_OPTION_NEW = 0,
+	FILE_MENU_OPTION_OPEN = 1,
+	FILE_MENU_OPTION_CLOSE = 2,
+	FILE_MENU_OPTION_SAVE = 3,
+	FILE_MENU_OPTION_SAVE_AS = 4,
+	FILE_MENU_OPTION_DELETE = 5,
+	FILE_MENU_OPTION_SEARCH = 6,
+	FILE_MENU_OPTION_REPLACE = 7,
+};
+
+var DIRECTORY : String = "res://"
+var EXCEPTIONS : String = "addons"
+var EXTENSIONS : PoolStringArray = [
+	"*.txt ; Plain Text File",
+	"*.rtf ; Rich Text Format File",
+	"*.log ; Log File",
+	"*.md ; MD File",
+	"*.doc ; WordPad Document",
+	"*.doc ; Microsoft Word Document",
+	"*.docm ; Word Open XML Macro-Enabled Document",
+	"*.docx ; Microsoft Word Open XML Document",
+	"*.bbs ; Bulletin Board System Text",
+	"*.dat ; Data File",
+	"*.xml ; XML File",
+	"*.sql ; SQL database file",
+	"*.json ; JavaScript Object Notation File",
+	"*.html ; HyperText Markup Language",
+	"*.csv ; Comma-separated values",
+	"*.cfg ; Configuration File",
+	"*.ini ; Initialization File (same as .cfg Configuration File)",
+	"*.csv ; Comma-separated values File",
+	"*.res ; Resource File",
+]
+
+
 var file_btn : MenuButton = null
 var preview_btn : MenuButton = null
 var settings_btn : MenuButton = null
@@ -31,30 +67,6 @@ var LastOpenedFiles = preload("res://addons/file-editor/scripts/LastOpenedFiles.
 
 var Preview = preload("res://addons/file-editor/scripts/Preview.gd")
 var VanillaEditor = preload("res://addons/file-editor/scripts/VanillaEditor.gd")
-
-var DIRECTORY : String = "res://"
-var EXCEPTIONS : String = "addons"
-var EXTENSIONS : PoolStringArray = [
-"*.txt ; Plain Text File",
-"*.rtf ; Rich Text Format File",
-"*.log ; Log File",
-"*.md ; MD File",
-"*.doc ; WordPad Document",
-"*.doc ; Microsoft Word Document",
-"*.docm ; Word Open XML Macro-Enabled Document",
-"*.docx ; Microsoft Word Open XML Document",
-"*.bbs ; Bulletin Board System Text",
-"*.dat ; Data File",
-"*.xml ; XML File",
-"*.sql ; SQL database file",
-"*.json ; JavaScript Object Notation File",
-"*.html ; HyperText Markup Language",
-"*.csv ; Comma-separated values",
-"*.cfg ; Configuration File",
-"*.ini ; Initialization File (same as .cfg Configuration File)",
-"*.csv ; Comma-separated values File",
-"*.res ; Resource File",
-]
 
 var directories = []
 var files = []
@@ -87,48 +99,48 @@ func _init():
 	var hotkey : InputEventKey = InputEventKey.new()
 	hotkey.scancode = KEY_N
 	hotkey.control = true
-	file_btn_popup.add_item("New File", -1, hotkey.get_scancode_with_modifiers())
+	file_btn_popup.add_item("New File", FileMenuOptions.FILE_MENU_OPTION_NEW, hotkey.get_scancode_with_modifiers())
 	
 	hotkey = InputEventKey.new()
 	hotkey.scancode = KEY_O
 	hotkey.control = true
-	file_btn_popup.add_item("Open File", -1, hotkey.get_scancode_with_modifiers())
+	file_btn_popup.add_item("Open File", FileMenuOptions.FILE_MENU_OPTION_OPEN, hotkey.get_scancode_with_modifiers())
 	
 	hotkey = InputEventKey.new()
 	hotkey.scancode = KEY_C
 	hotkey.control = true
 	hotkey.alt = true
-	file_btn_popup.add_item("Close File", -1, hotkey.get_scancode_with_modifiers())
+	file_btn_popup.add_item("Close File", FileMenuOptions.FILE_MENU_OPTION_CLOSE, hotkey.get_scancode_with_modifiers())
 	
 	file_btn_popup.add_separator()
 	
 	hotkey = InputEventKey.new()
 	hotkey.scancode = KEY_S
 	hotkey.control = true
-	file_btn_popup.add_item("Save File", -1, hotkey.get_scancode_with_modifiers())
+	file_btn_popup.add_item("Save File", FileMenuOptions.FILE_MENU_OPTION_SAVE, hotkey.get_scancode_with_modifiers())
 	
 	hotkey = InputEventKey.new()
 	hotkey.scancode = KEY_S
 	hotkey.control = true
 	hotkey.alt = true
-	file_btn_popup.add_item("Save File as...", -1, hotkey.get_scancode_with_modifiers())
+	file_btn_popup.add_item("Save File as...", FileMenuOptions.FILE_MENU_OPTION_SAVE_AS, hotkey.get_scancode_with_modifiers())
 	
 	hotkey = InputEventKey.new()
 	hotkey.scancode = KEY_D
 	hotkey.control = true
-	file_btn_popup.add_item("Delete File", -1, hotkey.get_scancode_with_modifiers())
+	file_btn_popup.add_item("Delete File", FileMenuOptions.FILE_MENU_OPTION_DELETE, hotkey.get_scancode_with_modifiers())
 	
 	file_btn_popup.add_separator()
 	
 	hotkey = InputEventKey.new()
 	hotkey.scancode = KEY_F
 	hotkey.control = true
-	file_btn_popup.add_item("Search in file...", -1, hotkey.get_scancode_with_modifiers())
+	file_btn_popup.add_item("Search in file...", FileMenuOptions.FILE_MENU_OPTION_SEARCH, hotkey.get_scancode_with_modifiers())
 	
 	hotkey = InputEventKey.new()
 	hotkey.scancode = KEY_R
 	hotkey.control = true
-	file_btn_popup.add_item("Replace occurencies", -1, hotkey.get_scancode_with_modifiers())
+	file_btn_popup.add_item("Replace occurencies", FileMenuOptions.FILE_MENU_OPTION_REPLACE, hotkey.get_scancode_with_modifiers())
 	
 	#Preview
 	preview_btn = MenuButton.new()
@@ -349,29 +361,29 @@ func save_current_file_as():
 
 func _on_file_btn_pressed(index : int):
 		match index:
-				0:
+				FileMenuOptions.FILE_MENU_OPTION_NEW:
 						create_selected_file()
-				1:
+				FileMenuOptions.FILE_MENU_OPTION_OPEN:
 						open_selected_file()
-				2:
+				FileMenuOptions.FILE_MENU_OPTION_CLOSE:
 						if current_file_index!=-1 and current_file_path != "":
 								close_file(current_file_index)
 				
-				3:
+				FileMenuOptions.FILE_MENU_OPTION_SAVE:
 						if current_file_index!=-1 and current_file_path != "":
 								save_as = false
 
 								save_file(current_file_path)
-				4:
+				FileMenuOptions.FILE_MENU_OPTION_SAVE_AS:
 						if current_file_index!=-1 and current_file_path != "":
 								save_as = true
 								save_file(current_file_path)
 								save_current_file_as()
-				5:
+				FileMenuOptions.FILE_MENU_OPTION_DELETE:
 						delete_selected_file()
-				6:
+				FileMenuOptions.FILE_MENU_OPTION_SEARCH:
 						current_editor.open_searchbox()
-				7:
+				FileMenuOptions.FILE_MENU_OPTION_REPLACE:
 						current_editor.open_replacebox()
 
 func _on_preview_btn_pressed(id : int):
