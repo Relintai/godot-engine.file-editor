@@ -13,15 +13,9 @@ _global_script_classes=[ {
 "class": @"CSVEditor",
 "language": @"GDScript",
 "path": "res://addons/file-editor/scripts/CSVEditor.gd"
-}, {
-"base": "HTTPRequest",
-"class": @"GoogleTranslateAPI",
-"language": @"GDScript",
-"path": "res://addons/file-editor/scripts/GoogleTranslatorAPI.gd"
 } ]
 _global_script_class_icons={
-@"CSVEditor": "",
-@"GoogleTranslateAPI": ""
+@"CSVEditor": ""
 }
 
 [application]

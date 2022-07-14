@@ -35,16 +35,6 @@ onready var editor_columns_length : LineEdit = editor_settings.get_node("EditorS
 onready var editor_columns_spacing : LineEdit = editor_settings.get_node("EditorSettings/ColumnsSpacing/ColumnsSpacingLine")
 onready var editor_rows_spacing : LineEdit = editor_settings.get_node("EditorSettings/RowsSpacing/RowsSpacingLine")
 
-onready var translation_dialog : WindowDialog = $TranslationDialog
-onready var token_line : LineEdit = $TranslationDialog/TranslationContainer/AuthToken/TokenLine
-onready var keys_tree : Tree = $TranslationDialog/TranslationContainer/Keys/ScrollContainer/KeysTree
-onready var source_lang_menu : OptionButton = $TranslationDialog/TranslationContainer/Languages/SourceLangMenu
-onready var target_langs_tree : Tree = $TranslationDialog/TranslationContainer/Languages/TargetLangs/TargetLangsTree
-
-onready var error_lbl : Label = $TranslationDialog/TranslationContainer/ErrorLbl
-
-onready var how_to : WindowDialog = $HowTo
-
 var current_file_path : String
 
 var file_path : String
@@ -55,16 +45,11 @@ var rows_count : int = 1
 signal update_file()
 signal editing_file()
 
-var GoogleTranslate : = GoogleTranslateAPI.new()
-
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	error_lbl.hide()
 	_connect_signals()
 	_load_icons()
 	_add_shortcuts()
-	
-	add_child(GoogleTranslate)
 
 func _add_shortcuts() -> void:
 	var hotkey
@@ -108,32 +93,6 @@ func _connect_signals() -> void:
 	$EditDialog/Options/Rows/LessBtn.connect("pressed", self, "_on_less_pressed")
 	$EditDialog/Options/Columns/MoreBtn.connect("pressed", self, "_on_more_pressed")
 	$EditDialog/Options/Rows/MoreBtn.connect("pressed", self, "_on_more_pressed")
-	
-	$TranslationDialog/TranslationContainer/AuthToken/SecretCheck.connect("toggled", self, "_on_secret_check")
-	$TranslationDialog/TranslationContainer/Buttons/AcceptBtn.connect("pressed", self, "_on_translation_accept")
-	$TranslationDialog/TranslationContainer/Buttons/GetTokenBtn.connect("pressed", how_to, "popup")
-	source_lang_menu.connect("item_selected", self , "_on_source_lang_selected")
-	
-	keys_tree.connect("cell_selected", self , "_on_keys_select_all_pressed")
-	target_langs_tree.connect("cell_selected", self , "_on_langs_select_all_pressed")
-
-func _on_keys_select_all_pressed():
-	if keys_tree.get_selected() != keys_tree.get_root():
-		return
-	var check : bool = not keys_tree.get_root().is_checked(0)
-	var first_key : TreeItem = keys_tree.get_root().get_children()
-	set_checked(first_key, check)
-	for key in range(0, keys.size()-1):
-		first_key = set_checked(first_key.get_next(), check)
-
-func _on_langs_select_all_pressed():
-	if target_langs_tree.get_selected() != target_langs_tree.get_root():
-		return
-	var check : bool = not target_langs_tree.get_root().is_checked(0)
-	var first_key : TreeItem = target_langs_tree.get_root().get_children()
-	set_checked(first_key, check)
-	for key in range(0, keys.size()-1):
-		first_key = set_checked(first_key.get_next(), check)
 
 func set_checked(key : TreeItem, to_check : bool) -> TreeItem:
 	if key!=null and key.is_editable(0): key.set_checked(0, to_check)
@@ -159,7 +118,6 @@ func _load_icons() -> void:
 	readonly_btn.set("custom_icons/unchecked",IconLoader.load_icon_from_name("edit"))
 	
 	settings_menu_options.set_item_icon(0, IconLoader.load_icon_from_name("tools"))
-	settings_menu_options.set_item_icon(1, IconLoader.load_icon_from_name("translate"))
 
 func clear_editor() -> void:
 	for column in Columns.get_children():
@@ -242,72 +200,6 @@ func save_table() -> void:
 
 func _on_editing_cell(new_text : String, cell_position : Vector2) -> void:
 	emit_signal("editing_file")
-
-func _on_secret_check(toggled : bool) -> void:
-	token_line.set_secret(toggled)
-
-func _on_translation_accept() -> void:
-	error_lbl.hide()
-	var token : String = token_line.get_text()
-	var tw : Tween = Tween.new()
-	if token in ["", " "]:
-		error_lbl.show()
-		error_lbl.set_text("An Auth Token is required in order to make translation requests to Google Translate API.")
-		add_child(tw)
-		tw.interpolate_property($TranslationDialog/TranslationContainer/AuthToken,"modulate",Color("#ffffff"),Color("#ff0000"),0.5,Tween.TRANS_BACK,Tween.EASE_OUT_IN)
-		tw.start()
-		return
-	tw.queue_free()
-	$TranslationDialog/TranslationContainer/AuthToken.set_modulate(Color("#ffffff"))
-	GoogleTranslate.set_token(token)
-	
-	var source_lang_idx : int = langs.find(source_lang_menu.get_text()) if source_lang_menu.get_selected() == -1 else source_lang_menu.get_selected()
-	source_lang_idx += 2 # + zero_column + "keys" column
-	
-	var target_langs_idx : Array = []
-	var first_lang : TreeItem = target_langs_tree.get_root().get_children()
-	get_checked(first_lang, target_langs_idx, langs)
-	for lang in range(0, langs.size()-1):
-		first_lang = get_checked(first_lang.get_next(), target_langs_idx, langs)
-	
-	if target_langs_idx.empty() : 
-		error_lbl.show()
-		error_lbl.set_text("You must select at least one target language to translate.")
-		return
-	
-	var selected_keys_idx : Array = []
-	var first_key : TreeItem = keys_tree.get_root().get_children()
-	get_checked(first_key, selected_keys_idx, keys)
-	for key in range(0, keys.size()-1):
-		first_key = get_checked(first_key.get_next(), selected_keys_idx, keys)
-	
-	if selected_keys_idx.empty() : 
-		error_lbl.show()
-		error_lbl.set_text("You must select at least one key to translate.")
-		return
-	
-	var target_keys : Array = []
-	for key_idx in selected_keys_idx:
-		target_keys.append(Columns.get_child(source_lang_idx).get_child(key_idx).get_text().replace("\"",""))
-	
-	for lang_idx in target_langs_idx:
-		GoogleTranslate.request_translation(
-			Columns.get_child(source_lang_idx).get_child(1).get_text(),
-			Columns.get_child(lang_idx).get_child(1).get_text(),
-			target_keys
-		)
-		var response : Array = yield(GoogleTranslate, "translation_received")
-		if response[0] != 200: 
-			error_lbl.show()
-			error_lbl.set_text(response[1].error.errors[0].message)
-			return
-		var translation_table : Array = response[1].data.translations
-		var i : int = 0
-		for key in selected_keys_idx:
-			Columns.get_child(lang_idx).get_child(key).set_text("\"%s\""%translation_table[i].translatedText)
-			i+=1
-	
-	translation_dialog.hide()
 
 func get_checked(tree_item : TreeItem, idx_array : Array, source_array : Array) -> TreeItem:
 	if tree_item.is_checked(0):
@@ -424,77 +316,6 @@ func drop_rows(rows_to_drop : PoolIntArray) -> void:
 	
 	save_table()
 
-var keys : Array = []
-var langs : Array = []
-#var source_lang : String = ""
-
-func load_translation_table() -> void:
-	keys.clear()
-	langs.clear()
-	for column in range(2, columns_count+1):
-		langs.append(Columns.get_child(column).get_child(1).get_text())
-	for row in range(2, rows_count+1):
-		keys.append(Columns.get_child(1).get_child(row).get_text())
-	
-	create_key_tree(keys)
-	load_source_lang(langs)
-	create_lang_tree(langs)
-
-func load_source_lang(langs : Array) -> void:
-	source_lang_menu.clear()
-	var lang_popup : PopupMenu = source_lang_menu.get_popup()
-	for lang in langs:
-		lang_popup.add_item(lang)
-	source_lang_menu.set_text(langs[0])
-
-func create_key_tree(keys : Array) -> void:
-	keys_tree.clear()
-	keys_tree.set_column_titles_visible(true)
-	keys_tree.set_column_title(0, "Keys to translate")
-	var root : TreeItem = keys_tree.create_item()
-	root.set_cell_mode(0, TreeItem.CELL_MODE_CHECK)
-	root.set_text(0, "Select/Deselect All")
-	root.set_editable(0, true)
-	for key in keys:
-		var child : TreeItem = keys_tree.create_item(root)
-		child.set_cell_mode(0, TreeItem.CELL_MODE_CHECK)
-		child.set_editable(0, true)
-		child.set_text(0, key)
-
-func create_lang_tree(target_langs : Array) -> void:
-	target_langs_tree.clear()
-	var root : TreeItem = target_langs_tree.create_item()
-	root.set_cell_mode(0, TreeItem.CELL_MODE_CHECK)
-	root.set_text(0, "Select/Deselect All")
-	root.set_editable(0, true)
-	for lang in target_langs:
-		var child : TreeItem = target_langs_tree.create_item(root)
-		child.set_cell_mode(0, TreeItem.CELL_MODE_CHECK)
-		child.set_editable(0, true)
-		child.set_text(0, lang)
-	
-	disable_source_lang(target_langs)
-
-func disable_source_lang(langs : Array) -> void:
-	var first_lang : TreeItem = target_langs_tree.get_root().get_children()
-	check_source_target_lang(first_lang)
-	for lang in range(0, langs.size()-1):
-		first_lang = check_source_target_lang(first_lang.get_next())
-
-func check_source_target_lang(target : TreeItem) -> TreeItem :
-	if target.get_text(0) == source_lang_menu.get_text() :
-		target.set_checked(0, false)
-		target.set_editable(0, false)
-		target.set_selectable(0, false)
-		target.set_custom_bg_color(0, Color("64373737"))
-	else:
-		target.set_editable(0, true)
-		target.set_selectable(0, true)
-		target.set_custom_bg_color(0, Color.transparent)
-	return target
-
-func _on_source_lang_selected(idx : int) -> void:
-	disable_source_lang(langs)
 
 func _on_settings_pressed(id : int) -> void:
 	match id:
@@ -503,9 +324,6 @@ func _on_settings_pressed(id : int) -> void:
 			editor_columns_spacing.set_text(str(Columns.get("custom_constants/separation")))
 			editor_rows_spacing.set_text(str(Columns.get_child(1).get("custom_constants/separation")))
 			editor_settings.popup()
-		1:
-			load_translation_table()
-			translation_dialog.popup()
 
 func _on_editor_settings_confirmed() -> void:
 	for column in range(0, columns_count+1):
