@@ -62,7 +62,6 @@ var confirmation_close : ConfirmationDialog = null
 
 var select_font_dialog : FileDialog = null
 
-var IconLoader = preload("res://addons/file-editor/scripts/IconLoader.gd").new()
 var LastOpenedFiles = preload("res://addons/file-editor/scripts/LastOpenedFiles.gd").new()
 
 var Preview = preload("res://addons/file-editor/scripts/Preview.gd")
@@ -458,7 +457,7 @@ func open_file(path : String, font : String = "null"):
 
 func generate_file_item(path : String , veditor : Control):
 	open_file_name.set_text(path)
-	open_file_list.add_item(path.get_file(),IconLoader.load_icon_from_name("file"),true)
+	open_file_list.add_item(path.get_file(), null,true)
 	
 	current_file_index = open_file_list.get_item_count()-1
 	
