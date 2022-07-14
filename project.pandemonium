@@ -29,6 +29,14 @@ _global_script_class_icons={
 config/name="fileed"
 config/icon="res://icon.png"
 
+[autoload]
+
+LastOpenedFiles="*res://addons/file-editor/scripts/LastOpenedFiles.gd"
+
+[editor_plugins]
+
+enabled=PoolStringArray( "res://addons/file-editor/plugin.cfg" )
+
 [physics]
 
 common/enable_pause_aware_picking=true
