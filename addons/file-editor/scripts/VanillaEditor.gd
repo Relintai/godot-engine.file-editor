@@ -1,7 +1,6 @@
 tool
 extends VBoxContainer
 
-var IconLoader = preload("res://addons/file-editor/scripts/IconLoader.gd").new()
 var LastOpenedFiles = preload("res://addons/file-editor/scripts/LastOpenedFiles.gd").new()
 
 var text_editor : TextEdit = null
@@ -178,8 +177,8 @@ func _ready():
 	
 	file_info_read_only.connect("toggled",self,"_on_Readonly_toggled")
 	
-	file_info_read_only.set("custom_icons/checked",IconLoader.load_icon_from_name("read"))
-	file_info_read_only.set("custom_icons/unchecked",IconLoader.load_icon_from_name("edit"))
+	#file_info_read_only.set("custom_icons/checked",IconLoader.load_icon_from_name("read"))
+	#file_info_read_only.set("custom_icons/unchecked",IconLoader.load_icon_from_name("edit"))
 	
 	add_to_group("vanilla_editor")
 	load_default_font()
@@ -257,7 +256,7 @@ func color_region(filextension : String): # -----------------------------> dal m
 
 func clean_editor():
 	text_editor.set_text("")
-	file_info_last_modified_icon.texture = IconLoader.load_icon_from_name("save")
+	#file_info_last_modified_icon.texture = IconLoader.load_icon_from_name("save")
 	file_info_last_modified.set_text("")
 	FileList.invalidate()
 	current_filename = ""
@@ -274,7 +273,7 @@ func new_file_open(file_content : String, last_modified : Dictionary, current_fi
 
 func update_lastmodified(last_modified : Dictionary, icon : String):
 	file_info_last_modified.set_text(str(last_modified.hour)+":"+str(last_modified.minute)+"  "+str(last_modified.day)+"/"+str(last_modified.month)+"/"+str(last_modified.year))
-	file_info_last_modified_icon.texture = IconLoader.load_icon_from_name(icon)
+	#file_info_last_modified_icon.texture = IconLoader.load_icon_from_name(icon)
 
 func new_file_create(file_name):
 	text_editor.set_text("")
@@ -290,7 +289,7 @@ func _on_Readonly_toggled(button_pressed):
 		text_editor.readonly = (false)
 
 func _on_text_editor_text_changed():
-	file_info_last_modified_icon.texture = IconLoader.load_icon_from_name("saveas")
+	#file_info_last_modified_icon.texture = IconLoader.load_icon_from_name("saveas")
 	count_characters()
 	emit_signal("text_changed")
 

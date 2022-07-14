@@ -1,7 +1,6 @@
 tool
 extends WindowDialog
 
-var IconLoader = preload("res://addons/file-editor/scripts/IconLoader.gd").new()
 var LastOpenedFiles = preload("res://addons/file-editor/scripts/LastOpenedFiles.gd").new()
 
 var text_preview : RichTextLabel = null
