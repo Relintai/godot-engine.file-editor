@@ -28,7 +28,7 @@ var IconLoader = preload("res://addons/file-editor/scripts/IconLoader.gd").new()
 var LastOpenedFiles = preload("res://addons/file-editor/scripts/LastOpenedFiles.gd").new()
 
 var Preview = preload("res://addons/file-editor/scripts/Preview.gd")
-var VanillaEditor = preload("res://addons/file-editor/scenes/VanillaEditor.tscn")
+var VanillaEditor = preload("res://addons/file-editor/scripts/VanillaEditor.gd")
 var CsvEditor = preload("res://addons/file-editor/scenes/CSVEditor.tscn")
 
 onready var EditorContainer = $FileEditorContainer/SplitContainer
@@ -225,12 +225,16 @@ func save_current_file_as():
 		update_list()
 		FileList.mode = FileDialog.MODE_SAVE_FILE
 		FileList.set_title("Save this File as...")
+		
 		if FileList.is_connected("file_selected",self,"delete_file"):
 				FileList.disconnect("file_selected",self,"delete_file")
+				
 		if FileList.is_connected("file_selected",self,"open_file"):
 				FileList.disconnect("file_selected",self,"open_file")
+				
 		if not FileList.is_connected("file_selected",self,"create_new_file"):
 				FileList.connect("file_selected",self,"create_new_file")
+				
 		open_filelist()
 
 func _on_filebtn_pressed(index : int):
@@ -367,7 +371,7 @@ func generate_file_item(path : String , veditor : Control , csveditor : Control)
 	OpenFileList.select(OpenFileList.get_item_count()-1)
 
 func open_in_vanillaeditor(path : String) -> Control:
-	var editor = VanillaEditor.instance()
+	var editor = VanillaEditor.new()
 	SplitEditorContainer.add_child(editor,true)
 	
 	if current_editor and current_editor!=editor:
@@ -460,7 +464,7 @@ func create_new_file(given_path : String):
 	var current_file = File.new()
 	current_file.open(given_path,File.WRITE)
 	if save_as : 
-			current_file.store_line(current_editor.get_node("TextEditor").get_text())
+			current_file.store_line(current_editor.text_editor.get_text())
 	current_file.close()
 	
 	open_file(given_path)
@@ -470,14 +474,14 @@ func save_file(current_path : String):
 	var current_file = File.new()
 	current_file.open(current_path,File.WRITE)
 	var current_content = ""
-	var lines = current_editor.get_node("TextEditor").get_line_count()
+	var lines = current_editor.text_editor.get_line_count()
 	
 	for line in range(0,lines):
-		if current_editor.get_node("TextEditor").get_line(line) == "":
+		if current_editor.text_editor.get_line(line) == "":
 			continue
 			
-		current_content = current_editor.get_node("TextEditor").get_text()
-		current_file.store_line(current_editor.get_node("TextEditor").get_line(line))
+		current_content = current_editor.text_editor.get_text()
+		current_file.store_line(current_editor.text_editor.get_line(line))
 		
 	current_file.close()
 	
@@ -511,11 +515,11 @@ func csv_preview():
 	get_parent().get_parent().get_parent().add_child(preview)
 	preview.popup()
 	preview.window_title += " ("+current_file_path.get_file()+")"
-	var lines = current_editor.get_node("TextEditor").get_line_count()
+	var lines = current_editor.text_editor.get_line_count()
 	var rows = []
 	
 	for i in range(0,lines-1):
-		rows.append(current_editor.get_node("TextEditor").get_line(i).rsplit(",",false))
+		rows.append(current_editor.text_editor.get_line(i).rsplit(",",false))
 		
 	preview.print_csv(rows)
 
@@ -524,21 +528,21 @@ func bbcode_preview():
 	get_parent().get_parent().get_parent().add_child(preview)
 	preview.popup()
 	preview.window_title += " ("+current_file_path.get_file()+")"
-	preview.print_bb(current_editor.get_node("TextEditor").get_text())
+	preview.print_bb(current_editor.text_editor.get_text())
 
 func markdown_preview():
 	var preview = Preview.new()
 	get_parent().get_parent().get_parent().add_child(preview)
 	preview.popup()
 	preview.window_title += " ("+current_file_path.get_file()+")"
-	preview.print_markdown(current_editor.get_node("TextEditor").get_text())
+	preview.print_markdown(current_editor.text_editor.get_text())
 
 func html_preview():
 	var preview = Preview.new()
 	get_parent().get_parent().get_parent().add_child(preview)
 	preview.popup()
 	preview.window_title += " ("+current_file_path.get_file()+")"
-	preview.print_html(current_editor.get_node("TextEditor").get_text())
+	preview.print_html(current_editor.text_editor.get_text())
 
 
 func _on_vanillaeditor_text_changed():
