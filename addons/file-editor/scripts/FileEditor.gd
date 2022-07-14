@@ -27,7 +27,7 @@ onready var ConfirmationClose = $ConfirmationDialog
 var IconLoader = preload("res://addons/file-editor/scripts/IconLoader.gd").new()
 var LastOpenedFiles = preload("res://addons/file-editor/scripts/LastOpenedFiles.gd").new()
 
-var Preview = preload("res://addons/file-editor/scenes/Preview.tscn")
+var Preview = preload("res://addons/file-editor/scripts/Preview.gd")
 var VanillaEditor = preload("res://addons/file-editor/scenes/VanillaEditor.tscn")
 var CsvEditor = preload("res://addons/file-editor/scenes/CSVEditor.tscn")
 
@@ -507,7 +507,7 @@ func clean_editor() -> void :
 
 
 func csv_preview():
-	var preview = Preview.instance()
+	var preview = Preview.new()
 	get_parent().get_parent().get_parent().add_child(preview)
 	preview.popup()
 	preview.window_title += " ("+current_file_path.get_file()+")"
@@ -520,21 +520,21 @@ func csv_preview():
 	preview.print_csv(rows)
 
 func bbcode_preview():
-	var preview = Preview.instance()
+	var preview = Preview.new()
 	get_parent().get_parent().get_parent().add_child(preview)
 	preview.popup()
 	preview.window_title += " ("+current_file_path.get_file()+")"
 	preview.print_bb(current_editor.get_node("TextEditor").get_text())
 
 func markdown_preview():
-	var preview = Preview.instance()
+	var preview = Preview.new()
 	get_parent().get_parent().get_parent().add_child(preview)
 	preview.popup()
 	preview.window_title += " ("+current_file_path.get_file()+")"
 	preview.print_markdown(current_editor.get_node("TextEditor").get_text())
 
 func html_preview():
-	var preview = Preview.instance()
+	var preview = Preview.new()
 	get_parent().get_parent().get_parent().add_child(preview)
 	preview.popup()
 	preview.window_title += " ("+current_file_path.get_file()+")"

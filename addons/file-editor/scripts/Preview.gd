@@ -4,25 +4,50 @@ extends WindowDialog
 var IconLoader = preload("res://addons/file-editor/scripts/IconLoader.gd").new()
 var LastOpenedFiles = preload("res://addons/file-editor/scripts/LastOpenedFiles.gd").new()
 
-onready var TextPreview = $Container/TextPreview
-onready var TablePreview = $Container/TablePreview
+var text_preview : RichTextLabel = null
+var table_preview : GridContainer = null
 
 signal image_downloaded()
 signal image_loaded()
 
 var imgBuffer : Image
 
-func _ready():
-	TextPreview.hide()
-	TablePreview.hide()
+func _init():
+	window_title = "File preview"
+	resizable = true
+	set_anchors_and_margins_preset(Control.PRESET_WIDE)
+	margin_left = 81
+	margin_top = 47
+	margin_right = -80
+	margin_bottom = -48
+	
+	var vbc : VBoxContainer = VBoxContainer.new()
+	vbc.set_anchors_and_margins_preset(Control.PRESET_WIDE)
+	add_child(vbc)
+	
+	text_preview = RichTextLabel.new()
+	vbc.add_child(text_preview)
+	text_preview.scroll_following = true
+	text_preview.bbcode_enabled = true
+	text_preview.size_flags_vertical = SIZE_EXPAND_FILL
+	text_preview.hide()
+	
+	table_preview = GridContainer.new()
+	vbc.add_child(table_preview)
+	table_preview.columns = 3
+	table_preview.size_flags_horizontal = SIZE_EXPAND_FILL
+	table_preview.size_flags_vertical = SIZE_EXPAND_FILL
+	table_preview.hide()
+	
+	connect("popup_hide", self, "_on_Preview_popup_hide")
 
 func print_preview(content : String):
-	TextPreview.append_bbcode(content)
-	TextPreview.show()
+	text_preview.append_bbcode(content)
+	text_preview.show()
 
 func print_bb(content : String):
-	TextPreview.append_bbcode(content)
-	TextPreview.show()
+	text_preview.append_bbcode(content)
+	text_preview.show()
 
 func print_markdown(content : String):
 	var result = ""
@@ -112,8 +137,8 @@ func print_markdown(content : String):
 		if content.find("* "+element):
 			content = content.replace("+"+element,"[indent]-"+element+"[/indent]")
 	
-	TextPreview.append_bbcode(content)
-	TextPreview.show()
+	text_preview.append_bbcode(content)
+	text_preview.show()
 
 func print_html(content : String):
 	content = content.replace("<i>","[i]")
@@ -139,11 +164,11 @@ func print_html(content : String):
 	content = content.replace("<right>","[right]")
 	content = content.replace("</right>","[/right]")
 	
-	TextPreview.append_bbcode(content)
-	TextPreview.show()
+	text_preview.append_bbcode(content)
+	text_preview.show()
 
 func print_csv(rows : Array):
-	TablePreview.columns = rows[0].size()
+	table_preview.columns = rows[0].size()
 	for item in rows:
 		for string in item:
 			var label = Label.new()
@@ -151,10 +176,10 @@ func print_csv(rows : Array):
 			label.set_h_size_flags(SIZE_EXPAND)
 			label.set_align(1)
 			label.set_valign(1)
-			TablePreview.add_child(label)
+			table_preview.add_child(label)
 	
 	
-	TablePreview.show()
+	table_preview.show()
 
 func _on_Preview_popup_hide():
 	queue_free()
