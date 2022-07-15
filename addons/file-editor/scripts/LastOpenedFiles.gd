@@ -66,6 +66,6 @@ func store_editor_fonts(file_name : String, font_path : String):
 	editor_settings.set_project_metadata("file_editor", "file_fonts", fonts_dict)
 
 
-func get_editor_font():
+func get_editor_font() -> String:
 	#var editor_plugin : EditorPlugin = EditorPlugin.new()
 	return editor_plugin.get_editor_interface().get_editor_settings().get_setting("interface/editor/code_font")

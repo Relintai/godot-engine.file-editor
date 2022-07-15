@@ -1,12 +1,11 @@
 tool
 extends VBoxContainer
 
-var LastOpenedFiles = null
+var LastOpenedFiles : Reference = null
 
 var text_editor : TextEdit = null
 
 var file_list : FileDialog = null
-var ClosingFile
 
 var search_box : HBoxContainer = null
 var search_box_line_edit : LineEdit = null
@@ -25,10 +24,10 @@ var file_info_last_modified : Label = null
 var file_info_c_counter : Label = null
 var file_info_read_only : CheckBox = null
 
-var current_path = ""
-var current_filename = ""
+var current_path : String = ""
+var current_filename : String = ""
 
-var search_flag = 0
+var search_flag : int = 0
 
 signal text_changed()
 
@@ -191,8 +190,9 @@ func set_font(font_path : String) -> void:
 	text_editor.set("custom_fonts/font",dynamic_font)
 
 func load_default_font() -> void:
-	var default_font = LastOpenedFiles.get_editor_font()
-	if default_font:
+	var default_font : String = LastOpenedFiles.get_editor_font()
+	
+	if default_font != "":
 		set_font(default_font)
 
 func set_wrap_enabled(enabled:bool):
@@ -295,19 +295,22 @@ func _on_text_editor_text_changed():
 
 func count_characters():
 	var counted : int = 0
-	for line in text_editor.get_line_count():
+	
+	for line in range(text_editor.get_line_count()):
 		counted += text_editor.get_line(line).length()
 		
 	file_info_c_counter.set_text(str(counted))
 
-func _on_LineEdit_text_changed(new_text):
-	var linecount = text_editor.get_line_count()
+func _on_LineEdit_text_changed(new_text : String):
+	var linecount : int = text_editor.get_line_count()
 	if new_text != "":
-		var found
-		var find = false
-		for line in range(0,linecount):
-			for column in range(0,text_editor.get_line(line).length()):
+		var found : PoolIntArray
+		var find : bool = false
+		
+		for line in range(linecount):
+			for column in range(text_editor.get_line(line).length()):
 				found = text_editor.search( new_text, search_flag, line , column )
+				
 				if found.size():
 					if found[1] == line:
 #						if not find:
@@ -318,7 +321,7 @@ func _on_LineEdit_text_changed(new_text):
 	else:
 		text_editor.select(0,0,0,0)
 
-func _on_matchcase_toggled(button_pressed):
+func _on_matchcase_toggled(button_pressed : bool):
 	if button_pressed:
 		search_flag = 1
 	else:
@@ -329,7 +332,7 @@ func _on_matchcase_toggled(button_pressed):
 			
 	_on_LineEdit_text_changed(search_box_line_edit.get_text())
 
-func _on_wholewords_toggled(button_pressed):
+func _on_wholewords_toggled(button_pressed : bool):
 	if button_pressed:
 		search_flag = 2
 	else:
@@ -351,10 +354,10 @@ func open_search_box():
 		search_box.get_node("LineEdit").grab_focus()
 
 func _on_Button_pressed():
-	var linecount = text_editor.get_line_count()-1
-	var old_text = replace_box_replace_le.get_text()
-	var new_text = replace_box_with.get_text()
-	var text = text_editor.get_text()
+	var linecount : int = text_editor.get_line_count()-1
+	var old_text : String = replace_box_replace_le.get_text()
+	var new_text : String = replace_box_with.get_text()
+	var text : String = text_editor.get_text()
 	text_editor.set_text(text.replace(old_text,new_text))
 
 func open_replace_box():

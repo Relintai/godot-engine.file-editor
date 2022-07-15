@@ -47,90 +47,109 @@ func print_bb(content : String):
 	text_preview.show()
 
 func print_markdown(content : String):
-	var result = ""
-	var bolded = []
-	var italics = []
-	var striked = []
-	var coded = []
-	var linknames = []
-	var images = []
-	var links = []
-	var lists = []
-	var underlined = []
+	var result : Array = Array()
+	var bolded : Array = Array()
+	var italics : Array = Array()
+	var striked : Array = Array()
+	var coded : Array = Array()
+	var linknames : Array = Array()
+	var images : Array = Array()
+	var links : Array = Array()
+	var lists : Array = Array()
+	var underlined : Array = Array()
 	
-	var regex = RegEx.new()
+	var regex : RegEx = RegEx.new()
 	regex.compile('\\*\\*(?<boldtext>.*)\\*\\*')
 	result = regex.search_all(content)
-	if result:
-		for res in result:
-			bolded.append(res.get_string("boldtext"))
+	for i in range(result.size()):
+		var res : RegExMatch = result[i]
+		bolded.append(res.get_string("boldtext"))
 	
 	regex.compile('\\_\\_(?<underlinetext>.*)\\_\\_')
 	result = regex.search_all(content)
-	if result:
-		for res in result:
-			underlined.append(res.get_string("underlinetext"))
+	for i in range(result.size()):
+		var res : RegExMatch = result[i]
+		underlined.append(res.get_string("underlinetext"))
 	
 	regex.compile("\\*(?<italictext>.*)\\*")
 	result = regex.search_all(content)
-	if result:
-		for res in result:
-			italics.append(res.get_string("italictext"))
+	for i in range(result.size()):
+		var res : RegExMatch = result[i]
+		italics.append(res.get_string("italictext"))
 	
 	regex.compile("~~(?<strikedtext>.*)~~")
 	result = regex.search_all(content)
-	if result:
-		for res in result:
-			striked.append(res.get_string("strikedtext"))
+	for i in range(result.size()):
+		var res : RegExMatch = result[i]
+		striked.append(res.get_string("strikedtext"))
 	
 	regex.compile("`(?<coded>.*)`")
 	result = regex.search_all(content)
-	if result:
-		for res in result:
-			coded.append(res.get_string("coded"))
+	for i in range(result.size()):
+		var res : RegExMatch = result[i]
+		coded.append(res.get_string("coded"))
 	
 	regex.compile("[+-*](?<element>\\s.*)")
 	result = regex.search_all(content)
-	if result:
-		for res in result:
-			lists.append(res.get_string("element"))
+	for i in range(result.size()):
+		var res : RegExMatch = result[i]
+		lists.append(res.get_string("element"))
 	
 	regex.compile("(?<img>!\\[.*?\\))")
 	result = regex.search_all(content)
-	if result:
-		for res in result:
-			images.append(res.get_string("img"))
+	for i in range(result.size()):
+		var res : RegExMatch = result[i]
+		images.append(res.get_string("img"))
 	
 	regex.compile("\\[(?<linkname>.*?)\\]|\\((?<link>[h\\.]\\S*?)\\)")
 	result = regex.search_all(content)
-	if result:
-		for res in result:
-			if res.get_string("link")!="":
-				links.append(res.get_string("link"))
-			if res.get_string("linkname")!="":
-				linknames.append(res.get_string("linkname"))
+	for i in range(result.size()):
+		var res : RegExMatch = result[i]
+		
+		if res.get_string("link")!="":
+			links.append(res.get_string("link"))
+			
+		if res.get_string("linkname")!="":
+			linknames.append(res.get_string("linkname"))
 	
-	for bold in bolded:
+	for i in range(bolded.size()):
+		var bold : String = bolded[i]
 		content = content.replace("**"+bold+"**","[b]"+bold+"[/b]")
-	for italic in italics:
+	
+	for i in range(italics.size()):
+		var italic : String = italics[i]
 		content = content.replace("*"+italic+"*","[i]"+italic+"[/i]")
-	for strik in striked:
+		
+	for i in range(striked.size()):
+		var strik : String = striked[i]
 		content = content.replace("~~"+strik+"~~","[s]"+strik+"[/s]")
-	for underline in underlined:
+	
+	for i in range(underlined.size()):
+		var underline : String = underlined[i]
 		content = content.replace("__"+underline+"__","[u]"+underline+"[/u]")
-	for code in coded:
+	
+	for i in range(coded.size()):
+		var code : String = coded[i]
 		content = content.replace("`"+code+"`","[code]"+code+"[/code]")
-	for image in images:
+	
+	for i in range(images.size()):
+		var image : String = images[i]
 		var substr = image.split("(")
 		var imglink = substr[1].rstrip(")")
 		content = content.replace(image,"[img]"+imglink+"[/img]")
+	
 	for i in links.size():
 		content = content.replace("["+linknames[i]+"]("+links[i]+")","[url="+links[i]+"]"+linknames[i]+"[/url]")
-	for element in lists:
+	
+	for i in range(lists.size()):
+		var element : String = lists[i]
+
 		if content.find("- "+element):
 			content = content.replace("-"+element,"[indent]-"+element+"[/indent]")
+			
 		if content.find("+ "+element):
 			content = content.replace("+"+element,"[indent]-"+element+"[/indent]")
+			
 		if content.find("* "+element):
 			content = content.replace("+"+element,"[indent]-"+element+"[/indent]")
 	
@@ -174,7 +193,6 @@ func print_csv(rows : Array):
 			label.set_align(1)
 			label.set_valign(1)
 			table_preview.add_child(label)
-	
 	
 	table_preview.show()
 
