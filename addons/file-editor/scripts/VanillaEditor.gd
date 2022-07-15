@@ -1,7 +1,7 @@
 tool
 extends VBoxContainer
 
-var LastOpenedFiles = preload("res://addons/file-editor/scripts/LastOpenedFiles.gd").new()
+var LastOpenedFiles = null
 
 var text_editor : TextEdit = null
 

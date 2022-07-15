@@ -62,7 +62,7 @@ var confirmation_close : ConfirmationDialog = null
 
 var select_font_dialog : FileDialog = null
 
-var LastOpenedFiles = preload("res://addons/file-editor/scripts/LastOpenedFiles.gd").new()
+var LastOpenedFiles = null
 
 var Preview = preload("res://addons/file-editor/scripts/Preview.gd")
 var VanillaEditor = preload("res://addons/file-editor/scripts/VanillaEditor.gd")
@@ -277,9 +277,10 @@ func _ready():
 	clean_editor()
 	connect_signals()
 	
-	var opened_files : Array = LastOpenedFiles.load_opened_files()
-	for opened_file in opened_files:
-		open_file(opened_file[1], opened_file[2])
+	if LastOpenedFiles:
+		var opened_files : Array = LastOpenedFiles.load_opened_files()
+		for opened_file in opened_files:
+			open_file(opened_file[1], opened_file[2])
 		
 	file_list.set_filters(EXTENSIONS)
 
@@ -466,6 +467,7 @@ func generate_file_item(path : String , veditor : Control):
 
 func open_in_vanillaeditor(path : String) -> Control:
 	var editor = VanillaEditor.new()
+	editor.LastOpenedFiles = LastOpenedFiles
 	editor.file_list = file_list
 	split_editor_container.add_child(editor,true)
 	

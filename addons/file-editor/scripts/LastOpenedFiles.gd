@@ -1,8 +1,10 @@
 tool
-extends Node
+extends Reference
+
+var editor_plugin : EditorPlugin = null
+var editor_settings : EditorSettings = null
 
 const lastopenedfile_path : String = "res://addons/file-editor/lastopenedfiles.lastcfg"
-
 
 func _ready():
 	pass
@@ -43,5 +45,5 @@ func store_editor_fonts(file_name : String, font_path : String):
 	file.save(lastopenedfile_path)
 
 func get_editor_font():
-	var editor_plugin : EditorPlugin = EditorPlugin.new()
+	#var editor_plugin : EditorPlugin = EditorPlugin.new()
 	return editor_plugin.get_editor_interface().get_editor_settings().get_setting("interface/editor/code_font")
