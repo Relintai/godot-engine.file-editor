@@ -7,8 +7,6 @@ var table_preview : GridContainer = null
 signal image_downloaded()
 signal image_loaded()
 
-var imgBuffer : Image
-
 func _init() -> void:
 	window_title = "File preview"
 	resizable = true

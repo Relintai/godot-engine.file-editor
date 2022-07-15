@@ -67,10 +67,10 @@ var LastOpenedFiles : Reference = null
 var Preview = preload("res://addons/file-editor/scripts/Preview.gd")
 var VanillaEditor = preload("res://addons/file-editor/scripts/VanillaEditor.gd")
 
-var directories : Array = []
-var files : Array = []
+var directories : Array
+var files : Array
 var current_file_index : int = -1
-var current_file_path : String = ""
+var current_file_path : String
 var save_as : bool = false
 var current_editor : Control
 var current_font : DynamicFont
@@ -495,13 +495,13 @@ func open_in_vanillaeditor(path : String) -> Control:
 	
 	return editor
 
-func close_file(index) -> void:
+func close_file(index : int) -> void:
 	if editing_file:
 		confirmation_close.popup()
 	else:
 		confirm_close(index)
 
-func confirm_close(index) -> void:
+func confirm_close(index : int) -> void:
 	LastOpenedFiles.remove_opened_file(index,open_file_list)
 	open_file_list.remove_item(index)
 	open_file_name.clear()

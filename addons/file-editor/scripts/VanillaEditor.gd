@@ -275,12 +275,12 @@ func update_lastmodified(last_modified : Dictionary, icon : String) -> void:
 	file_info_last_modified.set_text(str(last_modified.hour)+":"+str(last_modified.minute)+"  "+str(last_modified.day)+"/"+str(last_modified.month)+"/"+str(last_modified.year))
 	#file_info_last_modified_icon.texture = IconLoader.load_icon_from_name(icon)
 
-func new_file_create(file_name) -> void:
+func new_file_create(file_name : String) -> void:
 	text_editor.set_text("")
 	
 	file_list.invalidate()
 
-func _on_Readonly_toggled(button_pressed) -> void:
+func _on_Readonly_toggled(button_pressed : bool) -> void:
 	if button_pressed:
 		file_info_read_only.set_text("Read Only")
 		text_editor.readonly = (true)

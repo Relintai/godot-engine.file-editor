@@ -1,11 +1,6 @@
 tool
 extends Node
 
-var imgBuffer
-
-func _ready():
-	pass
-
 func load_icon_from_name(icon_name : String) -> ImageTexture:
 	var file : File = File.new()
 	var image : Image = Image.new()
