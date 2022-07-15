@@ -62,7 +62,7 @@ var confirmation_close : ConfirmationDialog = null
 
 var select_font_dialog : FileDialog = null
 
-var LastOpenedFiles = null
+var LastOpenedFiles : Reference = null
 
 var Preview = preload("res://addons/file-editor/scripts/Preview.gd")
 var VanillaEditor = preload("res://addons/file-editor/scripts/VanillaEditor.gd")
@@ -77,7 +77,7 @@ var current_font : DynamicFont
 
 var editing_file : bool = false
 
-func _init():
+func _init() -> void:
 	set_anchors_and_margins_preset(Control.PRESET_WIDE)
 	size_flags_vertical = SIZE_EXPAND_FILL
 	size_flags_horizontal = SIZE_EXPAND_FILL
@@ -270,7 +270,7 @@ func _init():
 	select_font_dialog.filters = farr
 
 
-func _ready():
+func _ready() -> void:
 	if not Engine.is_editor_hint():
 		return
 		
@@ -285,7 +285,7 @@ func _ready():
 	file_list.set_filters(EXTENSIONS)
 
 
-func connect_signals():
+func connect_signals() -> void:
 	file_list.connect("confirmed",self,"update_list")
 	file_btn_popup.connect("id_pressed",self,"_on_file_btn_pressed")
 	preview_btn_popup.connect("id_pressed",self,"_on_preview_btn_pressed")
@@ -298,7 +298,7 @@ func connect_signals():
 	select_font_dialog.connect("file_selected",self,"_on_font_selected")
 
 
-func create_selected_file():
+func create_selected_file() -> void:
 		update_list()
 		
 		file_list.mode = FileDialog.MODE_SAVE_FILE
@@ -315,7 +315,7 @@ func create_selected_file():
 				
 		open_file_list()
 
-func open_selected_file():
+func open_selected_file() -> void:
 		update_list()
 		
 		file_list.mode = FileDialog.MODE_OPEN_FILE
@@ -332,7 +332,7 @@ func open_selected_file():
 				
 		open_file_list()
 
-func delete_selected_file():
+func delete_selected_file() -> void:
 		update_list()
 		
 		file_list.mode = FileDialog.MODE_OPEN_FILES
@@ -349,7 +349,7 @@ func delete_selected_file():
 				
 		open_file_list()
 
-func save_current_file_as():
+func save_current_file_as() -> void:
 		update_list()
 		file_list.mode = FileDialog.MODE_SAVE_FILE
 		file_list.set_title("Save this File as...")
@@ -365,7 +365,7 @@ func save_current_file_as():
 				
 		open_file_list()
 
-func _on_file_btn_pressed(index : int):
+func _on_file_btn_pressed(index : int) -> void:
 		match index:
 				FileMenuOptions.FILE_MENU_OPTION_NEW:
 						create_selected_file()
@@ -392,7 +392,7 @@ func _on_file_btn_pressed(index : int):
 				FileMenuOptions.FILE_MENU_OPTION_REPLACE:
 						current_editor.open_replace_box()
 
-func _on_preview_btn_pressed(id : int):
+func _on_preview_btn_pressed(id : int) -> void:
 		if id == 0:
 				bbcode_preview()
 		elif id == 1:
@@ -402,16 +402,16 @@ func _on_preview_btn_pressed(id : int):
 		elif id == 3:
 				csv_preview()
 
-func _on_settings_btn_pressed(index : int):
+func _on_settings_btn_pressed(index : int) -> void:
 	match index:
 		0:
 			select_font_dialog.popup()
 
-func _on_font_selected(font_path : String):
+func _on_font_selected(font_path : String) -> void:
 	current_editor.set_font(font_path)
 	LastOpenedFiles.store_editor_fonts(current_file_path.get_file(), font_path)
 
-func _on_fileitem_pressed(index : int):
+func _on_fileitem_pressed(index : int) -> void:
 	current_file_index = index
 	var selected_item_metadata : Array = open_file_list.get_item_metadata(current_file_index)
 	var extension : String = selected_item_metadata[0].current_path.get_file().get_extension()
@@ -441,7 +441,7 @@ func _on_fileitem_pressed(index : int):
 		else:
 			current_editor.draw_minimap(false)
 
-func open_file(path : String, font : String = "null"):
+func open_file(path : String, font : String = "null") -> void:
 	if current_file_path != path:
 		current_file_path = path
 		
@@ -456,7 +456,7 @@ func open_file(path : String, font : String = "null"):
 		
 	current_editor.show()
 
-func generate_file_item(path : String , veditor : Control):
+func generate_file_item(path : String , veditor : Control) -> void:
 	open_file_name.set_text(path)
 	open_file_list.add_item(path.get_file(), null,true)
 	
@@ -495,13 +495,13 @@ func open_in_vanillaeditor(path : String) -> Control:
 	
 	return editor
 
-func close_file(index):
+func close_file(index) -> void:
 	if editing_file:
 		confirmation_close.popup()
 	else:
 		confirm_close(index)
 
-func confirm_close(index):
+func confirm_close(index) -> void:
 	LastOpenedFiles.remove_opened_file(index,open_file_list)
 	open_file_list.remove_item(index)
 	open_file_name.clear()
@@ -511,7 +511,7 @@ func confirm_close(index):
 		open_file_list.select(index-1)
 		_on_fileitem_pressed(index-1)
 
-func _on_update_file():
+func _on_update_file() -> void:
 	var current_file : File = File.new()
 	current_file.open(current_file_path,File.READ)
 	
@@ -522,23 +522,23 @@ func _on_update_file():
 	
 	current_editor.new_file_open(current_content,last_modified,current_file_path)
 
-func delete_file(files_selected : PoolStringArray):
+func delete_file(files_selected : PoolStringArray) -> void:
 	var dir = Directory.new()
 	for file in files_selected:
 		dir.remove(file)
 	
 	update_list()
 
-func open_new_file_dialogue():
+func open_new_file_dialogue() -> void:
 	new_file_dialogue.popup()
 	new_file_dialogue.set_position(OS.get_screen_size()/2 - new_file_dialogue.get_size()/2)
 
-func open_file_list():
+func open_file_list() -> void:
 	update_list()
 	file_list.popup()
 	file_list.set_position(OS.get_screen_size()/2 - file_list.get_size()/2)
 
-func create_new_file(given_path : String):
+func create_new_file(given_path : String) -> void:
 	var current_file : File = File.new()
 	current_file.open(given_path,File.WRITE)
 	
@@ -548,7 +548,7 @@ func create_new_file(given_path : String):
 	
 	open_file(given_path)
 
-func save_file(current_path : String):
+func save_file(current_path : String) -> void:
 	print("Saving file: ",current_path)
 	var current_file : File = File.new()
 	current_file.open(current_path,File.WRITE)
@@ -579,7 +579,7 @@ func save_file(current_path : String):
 	
 	update_list()
 
-func clean_editor() -> void :
+func clean_editor() -> void:
 	var nodes : Array = get_tree().get_nodes_in_group("vanilla_editor")
 	
 	for i in range(nodes.size()):
@@ -590,7 +590,7 @@ func clean_editor() -> void :
 	open_file_list.clear()
 
 
-func csv_preview():
+func csv_preview() -> void:
 	var preview : Control = Preview.new()
 	get_parent().get_parent().get_parent().add_child(preview)
 	preview.popup()
@@ -603,21 +603,21 @@ func csv_preview():
 		
 	preview.print_csv(rows)
 
-func bbcode_preview():
+func bbcode_preview() -> void:
 	var preview : Control = Preview.new()
 	get_parent().get_parent().get_parent().add_child(preview)
 	preview.popup()
 	preview.window_title += " ("+current_file_path.get_file()+")"
 	preview.print_bb(current_editor.text_editor.get_text())
 
-func markdown_preview():
+func markdown_preview() -> void:
 	var preview : Control = Preview.new()
 	get_parent().get_parent().get_parent().add_child(preview)
 	preview.popup()
 	preview.window_title += " ("+current_file_path.get_file()+")"
 	preview.print_markdown(current_editor.text_editor.get_text())
 
-func html_preview():
+func html_preview() -> void:
 	var preview : Control = Preview.new()
 	get_parent().get_parent().get_parent().add_child(preview)
 	preview.popup()
@@ -625,32 +625,32 @@ func html_preview():
 	preview.print_html(current_editor.text_editor.get_text())
 
 
-func _on_vanillaeditor_text_changed():
+func _on_vanillaeditor_text_changed() -> void:
 	if not open_file_list.get_item_text(current_file_index).begins_with("(*)"):
 		open_file_list.set_item_text(current_file_index,"(*)"+open_file_list.get_item_text(current_file_index))
 		editing_file = true
 
-func update_list():
+func update_list() -> void:
 		file_list.invalidate()
 
-func on_wrap_button(index:int):
+func on_wrap_button(index:int) -> void:
 	match index:
 		0:
 			current_editor.set_wrap_enabled(false)
 		1:
 			current_editor.set_wrap_enabled(true)
 
-func on_minimap_button(index:int):
+func on_minimap_button(index:int) -> void:
 	match index:
 		0:
 			current_editor.draw_minimap(false)
 		1:
 			current_editor.draw_minimap(true)
 
-func check_file_preview(file : String):
+func check_file_preview(file : String) -> void:
 	# check whether the opened file has a corresponding preview session for its extension
 		pass
 
 
-func _on_ConfirmationDialog_confirmed():
+func _on_ConfirmationDialog_confirmed() -> void:
 	confirm_close(current_file_index)

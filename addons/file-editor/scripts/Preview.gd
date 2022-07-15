@@ -9,7 +9,7 @@ signal image_loaded()
 
 var imgBuffer : Image
 
-func _init():
+func _init() -> void:
 	window_title = "File preview"
 	resizable = true
 	set_anchors_and_margins_preset(Control.PRESET_WIDE)
@@ -38,15 +38,15 @@ func _init():
 	
 	connect("popup_hide", self, "_on_Preview_popup_hide")
 
-func print_preview(content : String):
+func print_preview(content : String) -> void:
 	text_preview.append_bbcode(content)
 	text_preview.show()
 
-func print_bb(content : String):
+func print_bb(content : String) -> void:
 	text_preview.append_bbcode(content)
 	text_preview.show()
 
-func print_markdown(content : String):
+func print_markdown(content : String) -> void:
 	var result : Array = Array()
 	var bolded : Array = Array()
 	var italics : Array = Array()
@@ -156,7 +156,7 @@ func print_markdown(content : String):
 	text_preview.append_bbcode(content)
 	text_preview.show()
 
-func print_html(content : String):
+func print_html(content : String) -> void:
 	content = content.replace("<i>","[i]")
 	content = content.replace("</i>","[/i]")
 	content = content.replace("<b>","[b]")
@@ -183,7 +183,7 @@ func print_html(content : String):
 	text_preview.append_bbcode(content)
 	text_preview.show()
 
-func print_csv(rows : Array):
+func print_csv(rows : Array) -> void:
 	table_preview.columns = rows[0].size()
 	for item in rows:
 		for string in item:
@@ -196,5 +196,5 @@ func print_csv(rows : Array):
 	
 	table_preview.show()
 
-func _on_Preview_popup_hide():
+func _on_Preview_popup_hide() -> void:
 	queue_free()

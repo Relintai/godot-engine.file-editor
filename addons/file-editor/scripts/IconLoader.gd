@@ -7,12 +7,12 @@ func _ready():
 	pass
 
 func load_icon_from_name(icon_name : String) -> ImageTexture:
-	var file = File.new()
-	var image = Image.new()
-	var texture = ImageTexture.new()
+	var file : File = File.new()
+	var image : Image = Image.new()
+	var texture : ImageTexture = ImageTexture.new()
 	
 	file.open("res://addons/file-editor/icons.pngs/"+icon_name+".png.buttonicon", File.READ)
-	var buffer = file.get_buffer(file.get_len())
+	var buffer : PoolByteArray = file.get_buffer(file.get_len())
 	file.close()
 	
 	image.load_png_from_buffer(buffer)

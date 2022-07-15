@@ -4,7 +4,7 @@ extends Reference
 var editor_plugin : EditorPlugin = null
 var editor_settings : EditorSettings = null
 
-func store_opened_files(filecontainer : Control):
+func store_opened_files(filecontainer : Control) -> void:
 	var arr : Array = Array()
 	
 	for child in range(filecontainer.get_item_count()):
@@ -18,7 +18,7 @@ func store_opened_files(filecontainer : Control):
 	
 	editor_settings.set_project_metadata("file_editor", "files", arr)
 
-func remove_opened_file(index : int , filecontainer : Control):
+func remove_opened_file(index : int , filecontainer : Control) -> void:
 	var filepath : String = filecontainer.get_item_metadata(index)[0].current_path
 	var f : String = filepath.get_file()
 	
@@ -60,7 +60,7 @@ func load_opened_files() -> Array:
 		
 	return keys
 
-func store_editor_fonts(file_name : String, font_path : String):
+func store_editor_fonts(file_name : String, font_path : String) -> void:
 	var fonts_dict : Dictionary = editor_settings.get_project_metadata("file_editor", "file_fonts", Dictionary())
 	fonts_dict[file_name] = font_path
 	editor_settings.set_project_metadata("file_editor", "file_fonts", fonts_dict)
