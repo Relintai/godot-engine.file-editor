@@ -550,14 +550,15 @@ func create_new_file(given_path : String) -> void:
 
 func save_file(current_path : String) -> void:
 	print("Saving file: ",current_path)
+	
 	var current_file : File = File.new()
 	current_file.open(current_path,File.WRITE)
 	var current_content : String = ""
 	var lines : int = current_editor.text_editor.get_line_count()
 	
-	for line in range(0,lines):
-		if current_editor.text_editor.get_line(line) == "":
-			continue
+	for line in range(lines):
+		#if current_editor.text_editor.get_line(line) == "":
+		#	continue
 			
 		current_content = current_editor.text_editor.get_text()
 		current_file.store_line(current_editor.text_editor.get_line(line))
