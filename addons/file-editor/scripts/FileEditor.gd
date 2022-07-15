@@ -124,10 +124,11 @@ func _init() -> void:
 	hotkey.alt = true
 	file_btn_popup.add_item("Save File as...", FileMenuOptions.FILE_MENU_OPTION_SAVE_AS, hotkey.get_scancode_with_modifiers())
 	
-	hotkey = InputEventKey.new()
-	hotkey.scancode = KEY_D
-	hotkey.control = true
-	file_btn_popup.add_item("Delete File", FileMenuOptions.FILE_MENU_OPTION_DELETE, hotkey.get_scancode_with_modifiers())
+	#hotkey = InputEventKey.new()
+	#hotkey.scancode = KEY_D
+	#hotkey.control = true
+	#file_btn_popup.add_item("Delete File", FileMenuOptions.FILE_MENU_OPTION_DELETE, hotkey.get_scancode_with_modifiers())
+	file_btn_popup.add_item("Delete File", FileMenuOptions.FILE_MENU_OPTION_DELETE)
 	
 	file_btn_popup.add_separator()
 	
